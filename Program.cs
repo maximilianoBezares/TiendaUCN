@@ -9,6 +9,14 @@ using TiendaUCN.src.Application.Services.Interfaces;
 using TiendaUCN.src.Application.Services.Implements;
 using TiendaUCN.src.Infrastructure.Repositories.Interfaces;
 using TiendaUCN.src.Infrastructure.Repositories.Implements;
+using Hangfire;
+using Microsoft.Data.Sqlite;
+using Hangfire.Storage.SQLite;
+using Tienda_UCN_api.Src.Application.Jobs;
+using TiendaUCN.Src.Infrastructure.Repositories.Interfaces;
+using TiendaUCN.Src.Infrastructure.Repositories.Implements;
+using TiendaUCN.Src.Application.Services.Interfaces;
+using TiendaUCN.Src.Application.Services.Implements;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("SqliteDatabase") ?? throw new InvalidOperationException("Connection string SqliteDatabase no configurado");
@@ -17,12 +25,12 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<IFileRepository, FileRepository>();
+builder.Services.AddScoped<IFileService, FileService>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-
-
 
 #region Authentication Configuration
 Log.Information("Configurando autenticación JWT");
@@ -72,7 +80,49 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlite(connectionString));
 #endregion
 
+#region Hangfire Configuration
+Log.Information("Configurando los trabajos en segundo plano de Hangfire");
+var cronExpression = builder.Configuration["Jobs:CronJobDeleteUnconfirmedUsers"] ?? throw new InvalidOperationException("La expresión cron para eliminar usuarios no confirmados no está configurada.");
+var timeZone = TimeZoneInfo.FindSystemTimeZoneById(builder.Configuration["Jobs:TimeZone"] ?? throw new InvalidOperationException("La zona horaria para los trabajos no está configurada."));
+builder.Services.AddHangfire(configuration =>
+{
+    var connectionStringBuilder = new SqliteConnectionStringBuilder(connectionString);
+    var databasePath = connectionStringBuilder.DataSource;
+
+    configuration.UseSQLiteStorage(databasePath);
+    configuration.SetDataCompatibilityLevel(CompatibilityLevel.Version_170);
+    configuration.UseSimpleAssemblyNameTypeSerializer();
+    configuration.UseRecommendedSerializerSettings();
+});
+builder.Services.AddHangfireServer();
+
+#endregion
+
 var app = builder.Build();
+
+/* 
+
+//Se trato de realizar parte de hangfire, pero faltan archivos y datos por crear
+
+#region Database Migration and jobs Configuration
+Log.Information("Aplicando migraciones a la base de datos");
+using (var scope = app.Services.CreateScope())
+{
+    await DataSeeder.Initialize(scope.ServiceProvider);
+    var jobId = nameof(UserJob.DeleteUnconfirmedAsync);
+    RecurringJob.AddOrUpdate<UserJob>(
+        jobId,
+        job => job.DeleteUnconfirmedAsync(),
+        cronExpression,
+        new RecurringJobOptions
+        {
+            TimeZone = timeZone
+        }
+    );
+    Log.Information($"Job recurrente '{jobId}' configurado con cron: {cronExpression} en zona horaria: {timeZone.Id}");
+    MapperExtensions.ConfigureMapster(scope.ServiceProvider);
+}
+#endregion*/
 
 #region Pipeline Configuration
 Log.Information("Configurando el pipeline de la aplicación");
@@ -92,3 +142,10 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.Run();
 #endregion
 
+
+app.UseHangfireDashboard(builder.Configuration["HangfireDashboard:DashboardPath"] ?? throw new InvalidOperationException("La ruta de hangfire no ha sido declarada"), new DashboardOptions
+{
+    StatsPollingInterval = builder.Configuration.GetValue<int?>("HangfireDashboard:StatsPollingInterval") ?? throw new InvalidOperationException("El intervalo de actualización de estadísticas del panel de control de Hangfire no está configurado."),
+    DashboardTitle = builder.Configuration["HangfireDashboard:DashboardTitle"] ?? throw new InvalidOperationException("El título del panel de control de Hangfire no está configurado."),
+    DisplayStorageConnectionString = builder.Configuration.GetValue<bool?>("HangfireDashboard:DisplayStorageConnectionString") ?? throw new InvalidOperationException("La configuración 'HangfireDashboard:DisplayStorageConnectionString' no está definida."),
+});
