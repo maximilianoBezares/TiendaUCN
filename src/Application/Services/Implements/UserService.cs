@@ -1,4 +1,5 @@
 using Serilog;
+using Mapster;
 using TiendaUCN.src.Application.DTO;
 using TiendaUCN.src.Application.Services.Interfaces;
 using TiendaUCN.src.Domain.Models;
@@ -7,6 +8,7 @@ using TiendaUCN.src.Application.DTO.AuthDTO;
 using TiendaUCN.src.Application.Services.Interfaces;
 using TiendaUCN.src.Domain.Models;
 using TiendaUCN.src.Infrastructure.Repositories.Interfaces;
+using TiendaUCN.src.Application.Mappers;
 
 namespace TiendaUCN.src.Application.Services.Implements
 {
@@ -17,10 +19,19 @@ namespace TiendaUCN.src.Application.Services.Implements
     {
         private readonly ITokenService _tokenService;
         private readonly IUserRepository _userRepository;
-        public UserService(ITokenService tokenService, IUserRepository userRepository)
+        private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
+        private readonly IVerificationCodeRepository _verificationCodeRepository;
+        private readonly int _verificationCodeExpirationTimeInMinutes;
+
+        public UserService(ITokenService tokenService, IUserRepository userRepository, IEmailService emailService, IVerificationCodeRepository verificationCodeRepository, IConfiguration configuration)
         {
             _tokenService = tokenService;
             _userRepository = userRepository;
+            _emailService = emailService;
+            _verificationCodeRepository = verificationCodeRepository;
+            _configuration = configuration;
+            _verificationCodeExpirationTimeInMinutes = _configuration.GetValue<int>("VerificationCode:ExpirationTimeInMinutes");
         }
 
         /// <summary>
@@ -68,6 +79,53 @@ namespace TiendaUCN.src.Application.Services.Implements
             Log.Information($"Inicio de sesión exitoso para el usuario: {loginDTO.Email} desde la IP: {ipAddress}");
             var token = _tokenService.GenerateToken(user, roleName, loginDTO.RememberMe);
             return (token, user.Id);
+        }
+
+        /// <summary>
+        /// Registra un nuevo usuario.
+        /// </summary>
+        /// <param name="registerDTO">DTO que contiene la información del nuevo usuario.</param>
+        /// <param name="httpContext">El contexto HTTP actual.</param>
+        /// <returns>Un string que representa el mensaje de éxito del registro.</returns>
+        public async Task<string> RegisterAsync(RegisterDTO registerDTO, HttpContext httpContext)
+        {
+            var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "IP desconocida";
+            Log.Information($"Intento de registro de nuevo usuario: {registerDTO.Email} desde la IP: {ipAddress}");
+
+            bool isRegistered = await _userRepository.ExistsByEmailAsync(registerDTO.Email);
+            if (isRegistered)
+            {
+                Log.Warning($"El usuario con el correo {registerDTO.Email} ya está registrado.");
+                throw new InvalidOperationException("El usuario ya está registrado.");
+            }
+            isRegistered = await _userRepository.ExistsByRutAsync(registerDTO.Rut);
+            if (isRegistered)
+            {
+                Log.Warning($"El usuario con el RUT {registerDTO.Rut} ya está registrado.");
+                throw new InvalidOperationException("El RUT ya está registrado.");
+            }
+            var user = registerDTO.Adapt<User>();
+            var result = await _userRepository.CreateAsync(user, registerDTO.Password);
+            if (!result)
+            {
+                Log.Warning($"Error al registrar el usuario: {registerDTO.Email}");
+                throw new Exception("Error al registrar el usuario.");
+            }
+            Log.Information($"Registro exitoso para el usuario: {registerDTO.Email} desde la IP: {ipAddress}");
+            string code = new Random().Next(100000, 999999).ToString();
+            var verificationCode = new VerificationCode
+            {
+                UserId = user.Id,
+                Code = code,
+                CodeType = CodeType.EmailVerification,
+                ExpiryDate = DateTime.UtcNow.AddMinutes(_verificationCodeExpirationTimeInMinutes)
+            };
+            var createdVerificationCode = await _verificationCodeRepository.CreateAsync(verificationCode);
+            Log.Information($"Código de verificación generado para el usuario: {registerDTO.Email} - Código: {createdVerificationCode.Code}");
+
+            await _emailService.SendVerificationCodeEmailAsync(registerDTO.Email, createdVerificationCode.Code);
+            Log.Information($"Se ha enviado un código de verificación al correo electrónico: {registerDTO.Email}");
+            return "Se ha enviado un código de verificación a su correo electrónico.";
         }
     }
 }
