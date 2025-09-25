@@ -9,9 +9,14 @@ using TiendaUCN.src.Application.Services.Interfaces;
 using TiendaUCN.src.Application.Services.Implements;
 using TiendaUCN.src.Infrastructure.Repositories.Interfaces;
 using TiendaUCN.src.Infrastructure.Repositories.Implements;
+using TiendaUCN.src.Application.Mappers;
+using Mapster;
+using Resend;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("SqliteDatabase") ?? throw new InvalidOperationException("Connection string SqliteDatabase no configurado");
+
+MapperExtensions.ConfigureMapster();
 
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
@@ -20,9 +25,20 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IVerificationCodeRepository, VerificationCodeRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-
+#region Email Service Configuration
+Log.Information("Configurando servicio de Email");
+builder.Services.AddOptions();
+builder.Services.AddHttpClient<ResendClient>();
+builder.Services.Configure<ResendClientOptions>(o =>
+{
+    o.ApiToken = builder.Configuration["ResendAPIKey"] ?? throw new InvalidOperationException("El token de API de Resend no está configurado.");
+});
+builder.Services.AddTransient<IResend, ResendClient>();
+#endregion
 
 #region Authentication Configuration
 Log.Information("Configurando autenticación JWT");
@@ -74,6 +90,16 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 var app = builder.Build();
 
+#region Database Migration
+Log.Information("Aplicando migraciones a la base de datos");
+using (var scope = app.Services.CreateScope())
+{
+    await DataSeeder.Initialize(scope.ServiceProvider);
+}
+#endregion
+
+#region Pipeline Configur
+
 #region Pipeline Configuration
 Log.Information("Configurando el pipeline de la aplicación");
 app.UseSwagger();
@@ -91,4 +117,4 @@ app.MapControllers();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.Run();
 #endregion
-
+#endregion
