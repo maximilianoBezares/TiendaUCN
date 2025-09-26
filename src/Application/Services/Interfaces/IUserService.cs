@@ -21,5 +21,14 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// </summary>
         /// <returns>Número de usuarios eliminados</returns>
         Task<int> DeleteUnconfirmedAsync();
+
+        /// <summary>
+        /// Registra un nuevo usuario.
+        /// </summary>
+        /// <param name="registerDTO">DTO que contiene la información del nuevo usuario.</param>
+        /// <param name="httpContext">El contexto HTTP actual.</param>
+        /// <returns>Un string que representa el mensaje de éxito del registro.</returns>
+        Task<string> RegisterAsync(RegisterDTO registerDTO, HttpContext httpContext);
+
     }
 }

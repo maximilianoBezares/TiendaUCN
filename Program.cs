@@ -13,13 +13,13 @@ using Hangfire;
 using Microsoft.Data.Sqlite;
 using Hangfire.Storage.SQLite;
 using Tienda_UCN_api.Src.Application.Jobs;
-using TiendaUCN.Src.Infrastructure.Repositories.Interfaces;
-using TiendaUCN.Src.Infrastructure.Repositories.Implements;
-using TiendaUCN.Src.Application.Services.Interfaces;
-using TiendaUCN.Src.Application.Services.Implements;
-
+using TiendaUCN.src.Application.Mappers;
+using Mapster;
+using Resend;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("SqliteDatabase") ?? throw new InvalidOperationException("Connection string SqliteDatabase no configurado");
+
+MapperExtensions.ConfigureMapster();
 
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
@@ -30,7 +30,22 @@ builder.Services.AddScoped<IFileService, FileService>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IVerificationCodeRepository, VerificationCodeRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+
+#region Email Service Configuration
+Log.Information("Configurando servicio de Email");
+builder.Services.AddOptions();
+builder.Services.AddHttpClient<ResendClient>();
+builder.Services.Configure<ResendClientOptions>(o =>
+{
+    o.ApiToken = builder.Configuration["ResendAPIKey"] ?? throw new InvalidOperationException("El token de API de Resend no está configurado.");
+});
+builder.Services.AddTransient<IResend, ResendClient>();
+#endregion
+
 
 #region Authentication Configuration
 Log.Information("Configurando autenticación JWT");
@@ -100,11 +115,15 @@ builder.Services.AddHangfireServer();
 
 var app = builder.Build();
 
+
 /* 
 
 //Se trato de realizar parte de hangfire, pero faltan archivos y datos por crear
 
 #region Database Migration and jobs Configuration
+=======
+#region Database Migration
+
 Log.Information("Aplicando migraciones a la base de datos");
 using (var scope = app.Services.CreateScope())
 {
@@ -142,10 +161,12 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.Run();
 #endregion
 
-
 app.UseHangfireDashboard(builder.Configuration["HangfireDashboard:DashboardPath"] ?? throw new InvalidOperationException("La ruta de hangfire no ha sido declarada"), new DashboardOptions
 {
     StatsPollingInterval = builder.Configuration.GetValue<int?>("HangfireDashboard:StatsPollingInterval") ?? throw new InvalidOperationException("El intervalo de actualización de estadísticas del panel de control de Hangfire no está configurado."),
     DashboardTitle = builder.Configuration["HangfireDashboard:DashboardTitle"] ?? throw new InvalidOperationException("El título del panel de control de Hangfire no está configurado."),
     DisplayStorageConnectionString = builder.Configuration.GetValue<bool?>("HangfireDashboard:DisplayStorageConnectionString") ?? throw new InvalidOperationException("La configuración 'HangfireDashboard:DisplayStorageConnectionString' no está definida."),
 });
+
+#endregion
+

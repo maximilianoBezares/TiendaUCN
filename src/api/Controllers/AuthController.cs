@@ -28,5 +28,17 @@ namespace TiendaUCN.src.api.Controllers
             var (token, userId) = await _userService.LoginAsync(loginDTO, HttpContext);
             return Ok(new GenericResponse<string>("Inicio de sesión exitoso", token));
         }
+
+                /// <summary>
+        /// Registra un nuevo usuario.
+        /// </summary>
+        /// <param name="registerDTO">DTO que contiene la información del nuevo usuario.</param
+        /// <returns>Un IActionResult que representa el resultado de la operación.</returns>
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
+        {
+            var message = await _userService.RegisterAsync(registerDTO, HttpContext);
+            return Ok(new GenericResponse<string>("Registro exitoso", message));
+        }
     }
 }
