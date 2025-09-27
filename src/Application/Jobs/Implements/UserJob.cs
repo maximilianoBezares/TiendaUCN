@@ -1,9 +1,9 @@
 using Hangfire;
 using Serilog;
-using Tienda_UCN_api.Src.Application.Jobs.Interfaces;
+using TiendaUCN.src.Application.Jobs.Interfaces;
 using TiendaUCN.src.Application.Services.Interfaces;
 
-namespace Tienda_UCN_api.Src.Application.Jobs
+namespace TiendaUCN.src.Application.Jobs
 {
     /// <summary>
     /// Clase para manejar trabajos de usuario con Hangfire.

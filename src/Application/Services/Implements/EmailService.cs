@@ -12,7 +12,11 @@ namespace TiendaUCN.src.Application.Services.Implements
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public EmailService(IResend resend, IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
+        public EmailService(
+            IResend resend,
+            IConfiguration configuration,
+            IWebHostEnvironment webHostEnvironment
+        )
         {
             _resend = resend;
             _configuration = configuration;

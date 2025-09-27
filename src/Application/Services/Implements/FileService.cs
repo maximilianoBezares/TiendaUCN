@@ -2,11 +2,13 @@ using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Serilog;
 using SkiaSharp;
+using TiendaUCN.src.Application.Services.Interfaces;
 using TiendaUCN.src.Domain.Models;
-using TiendaUCN.Src.Application.Services.Interfaces;
-using TiendaUCN.Src.Infrastructure.Repositories.Interfaces;
+using TiendaUCN.src.Infrastructure.Repositories.Interfaces;
 
-namespace TiendaUCN.Src.Application.Services.Implements
+
+
+namespace TiendaUCN.src.Application.Services.Implements
 {
     /// <summary>
     /// Servicio para manejar archivos en Cloudinary.

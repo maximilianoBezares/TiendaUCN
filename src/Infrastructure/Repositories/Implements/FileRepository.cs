@@ -2,9 +2,10 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using TiendaUCN.src.Domain.Models;
 using TiendaUCN.src.Infrastructure.Data;
-using TiendaUCN.Src.Infrastructure.Repositories.Interfaces;
+using TiendaUCN.src.Infrastructure.Repositories.Interfaces;
 
-namespace TiendaUCN.Src.Infrastructure.Repositories.Implements
+
+namespace TiendaUCN.src.Infrastructure.Repositories.Implements
 {
     public class FileRepository : IFileRepository
     {
