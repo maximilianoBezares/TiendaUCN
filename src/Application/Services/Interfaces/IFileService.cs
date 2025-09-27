@@ -1,4 +1,4 @@
-namespace TiendaUCN.Src.Application.Services.Interfaces
+namespace TiendaUCN.src.Application.Services.Interfaces
 {
     /// <summary>
     /// Interfaz para el servicio de archivos.

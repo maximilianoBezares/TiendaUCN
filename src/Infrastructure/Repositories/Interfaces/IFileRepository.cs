@@ -1,6 +1,6 @@
 using TiendaUCN.src.Domain.Models;
 
-namespace TiendaUCN.Src.Infrastructure.Repositories.Interfaces
+namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
 {
     /// <summary>
     /// Interfaz para el repositorio de archivos.

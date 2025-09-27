@@ -3,7 +3,7 @@ using Serilog;
 using TiendaUCN.src.Application.DTO;
 using TiendaUCN.src.Application.Services.Interfaces;
 using TiendaUCN.src.Application.DTO.AuthDTO;
-using TiendaUCN.src.Application.Services.Interfaces;
+
 
 namespace TiendaUCN.src.api.Controllers
 {
