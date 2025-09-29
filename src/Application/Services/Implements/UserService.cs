@@ -127,5 +127,77 @@ namespace TiendaUCN.src.Application.Services.Implements
             Log.Information($"Se ha enviado un código de verificación al correo electrónico: {registerDTO.Email}");
             return "Se ha enviado un código de verificación a su correo electrónico.";
         }
+
+        /// <summary>
+        /// Verifica el correo electrónico del usuario.
+        /// </summary>
+        /// <param name="verifyEmailDTO">DTO que contiene el correo electrónico y el código de verificación.</param>
+        /// <returns>Un string que representa el mensaje de éxito de la verificación.</returns>
+        public async Task<string> VerifyEmailAsync(VerifyEmailDTO verifyEmailDTO)
+        {
+            User? user = await _userRepository.GetByEmailAsync(verifyEmailDTO.Email);
+            if (user == null)
+            {
+                Log.Warning($"El usuario con el correo {verifyEmailDTO.Email} no existe.");
+                throw new KeyNotFoundException("El usuario no existe.");
+            }
+            if (user.EmailConfirmed)
+            {
+                Log.Warning($"El usuario con el correo {verifyEmailDTO.Email} ya ha verificado su correo electrónico.");
+                throw new InvalidOperationException("El correo electrónico ya ha sido verificado.");
+            }
+            CodeType codeType = CodeType.EmailVerification;
+
+            VerificationCode? verificationCode = await _verificationCodeRepository.GetLatestByUserIdAsync(user.Id, codeType);
+            if (verificationCode == null)
+            {
+                Log.Warning($"No se encontró un código de verificación para el usuario: {verifyEmailDTO.Email}");
+                throw new KeyNotFoundException("El código de verificación no existe.");
+            }
+            if (verificationCode.Code != verifyEmailDTO.VerificationCode || DateTime.UtcNow >= verificationCode.ExpiryDate)
+            {
+                int attempsCountUpdated = await _verificationCodeRepository.IncreaseAttemptsAsync(user.Id, codeType);
+                Log.Warning($"Código de verificación incorrecto o expirado para el usuario: {verifyEmailDTO.Email}. Intentos actuales: {attempsCountUpdated}");
+                if (attempsCountUpdated >= 5)
+                {
+                    Log.Warning($"Se ha alcanzado el límite de intentos para el usuario: {verifyEmailDTO.Email}");
+                    bool codeDeleteResult = await _verificationCodeRepository.DeleteByUserIdAsync(user.Id, codeType);
+                    if (codeDeleteResult)
+                    {
+                        Log.Warning($"Se ha eliminado el código de verificación para el usuario: {verifyEmailDTO.Email}");
+                        bool userDeleteResult = await _userRepository.DeleteAsync(user.Id);
+                        if (userDeleteResult)
+                        {
+                            Log.Warning($"Se ha eliminado el usuario: {verifyEmailDTO.Email}");
+                            throw new ArgumentException("Se ha alcanzado el límite de intentos. El usuario ha sido eliminado.");
+                        }
+                    }
+                }
+                if (DateTime.UtcNow >= verificationCode.ExpiryDate)
+                {
+                    Log.Warning($"El código de verificación ha expirado para el usuario: {verifyEmailDTO.Email}");
+                    throw new ArgumentException("El código de verificación ha expirado.");
+                }
+                else
+                {
+                    Log.Warning($"El código de verificación es incorrecto para el usuario: {verifyEmailDTO.Email}");
+                    throw new ArgumentException($"El código de verificación es incorrecto, quedan {5 - attempsCountUpdated} intentos.");
+                }
+            }
+            bool emailConfirmed = await _userRepository.ConfirmEmailAsync(user.Email!);
+            if (emailConfirmed)
+            {
+                bool codeDeleteResult = await _verificationCodeRepository.DeleteByUserIdAsync(user.Id, codeType);
+                if (codeDeleteResult)
+                {
+                    Log.Warning($"Se ha eliminado el código de verificación para el usuario: {verifyEmailDTO.Email}");
+                    await _emailService.SendWelcomeEmailAsync(user.Email!);
+                    Log.Information($"El correo electrónico del usuario {verifyEmailDTO.Email} ha sido confirmado exitosamente.");
+                    return "!Ya puedes iniciar sesión y disfrutar de todos los beneficios de Tienda UCN!";
+                }
+                throw new Exception("Error al confirmar el correo electrónico.");
+            }
+            throw new Exception("Error al verificar el correo electrónico.");
+        }        
     }
 }
