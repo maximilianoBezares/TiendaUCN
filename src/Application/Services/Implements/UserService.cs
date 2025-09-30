@@ -198,6 +198,43 @@ namespace TiendaUCN.src.Application.Services.Implements
                 throw new Exception("Error al confirmar el correo electrónico.");
             }
             throw new Exception("Error al verificar el correo electrónico.");
-        }        
+        }  
+
+        /// <summary>
+        /// Reenvía el código de verificación al correo electrónico del usuario.
+        /// </summary>
+        /// <param name="resendEmailVerificationCodeDTO">DTO que contiene el correo electrónico del usuario.</param>
+        /// <returns>Un string que representa el mensaje de éxito del reenvío.</returns>
+        public async Task<string> ResendEmailVerificationCodeAsync(ResendEmailVerificationDTO resendEmailVerificationCodeDTO)
+        {
+            var currentTime = DateTime.UtcNow;
+            User? user = await _userRepository.GetByEmailAsync(resendEmailVerificationCodeDTO.Email);
+            if (user == null)
+            {
+                Log.Warning($"El usuario con el correo {resendEmailVerificationCodeDTO.Email} no existe.");
+                throw new KeyNotFoundException("El usuario no existe.");
+            }
+            if (user.EmailConfirmed)
+            {
+                Log.Warning($"El usuario con el correo {resendEmailVerificationCodeDTO.Email} ya ha verificado su correo electrónico.");
+                throw new InvalidOperationException("El correo electrónico ya ha sido verificado.");
+            }
+            VerificationCode? verificationCode = await _verificationCodeRepository.GetLatestByUserIdAsync(user.Id, CodeType.EmailVerification);
+            var expirationTime = verificationCode!.CreatedAt.AddMinutes(_verificationCodeExpirationTimeInMinutes);
+            if (expirationTime > currentTime)
+            {
+                int remainingSeconds = (int)(expirationTime - currentTime).TotalSeconds;
+                Log.Warning($"El usuario {resendEmailVerificationCodeDTO.Email} ha solicitado un reenvío del código de verificación antes de los {_verificationCodeExpirationTimeInMinutes} minutos.");
+                throw new TimeoutException($"Debe esperar {remainingSeconds} segundos para solicitar un nuevo código de verificación.");
+            }
+            string newCode = new Random().Next(100000, 999999).ToString();
+            verificationCode.Code = newCode;
+            verificationCode.ExpiryDate = DateTime.UtcNow.AddMinutes(_verificationCodeExpirationTimeInMinutes);
+            await _verificationCodeRepository.UpdateAsync(verificationCode);
+            Log.Information($"Nuevo código de verificación generado para el usuario: {resendEmailVerificationCodeDTO.Email} - Código: {newCode}");
+            await _emailService.SendVerificationCodeEmailAsync(user.Email!, newCode);
+            Log.Information($"Se ha reenviado un nuevo código de verificación al correo electrónico: {resendEmailVerificationCodeDTO.Email}");
+            return "Se ha reenviado un nuevo código de verificación a su correo electrónico.";
+        }      
     }
 }
