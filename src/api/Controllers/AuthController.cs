@@ -40,7 +40,7 @@ namespace TiendaUCN.src.api.Controllers
             var message = await _userService.RegisterAsync(registerDTO, HttpContext);
             return Ok(new GenericResponse<string>("Registro exitoso", message));
         }
-        
+
         /// <summary>
         /// Verifica el correo electrónico del usuario.
         /// </summary>
@@ -52,5 +52,17 @@ namespace TiendaUCN.src.api.Controllers
             var message = await _userService.VerifyEmailAsync(verifyEmailDTO);
             return Ok(new GenericResponse<string>("Verificación de correo electrónico exitosa", message));
         }
-    }
+
+        /// <summary>
+        /// Reenvía el código de verificación al correo electrónico del usuario.
+        /// </summary>
+        /// <param name="resendEmailVerificationCodeDTO">DTO que contiene el correo electrónico del usuario.</param>
+        /// <returns>Un IActionResult que representa el resultado de la operación.</returns>
+        [HttpPost("resend-email-verification-code")]
+        public async Task<IActionResult> ResendEmailVerificationCode([FromBody] ResendEmailVerificationDTO resendEmailVerificationCodeDTO)
+        {
+            var message = await _userService.ResendEmailVerificationCodeAsync(resendEmailVerificationCodeDTO);
+            return Ok(new GenericResponse<string>("Código de verificación reenviado exitosamente", message));
+        }
+    }    
 }

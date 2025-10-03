@@ -37,5 +37,12 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// <returns>Un string que representa el mensaje de éxito de la verificación.</returns>
         Task<string> VerifyEmailAsync(VerifyEmailDTO verifyEmailDTO);
 
+        /// <summary>
+        /// Reenvía el código de verificación al correo electrónico del usuario.
+        /// </summary>
+        /// <param name="resendEmailVerificationCodeDTO">DTO que contiene el correo electrónico del usuario.</param>
+        /// <returns>Un string que representa el mensaje de éxito del reenvío.</returns>
+        Task<string> ResendEmailVerificationCodeAsync(ResendEmailVerificationDTO resendEmailVerificationCodeDTO);
+
     }
 }
