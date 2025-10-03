@@ -73,5 +73,25 @@ namespace TiendaUCN.src.Application.Services.Implements
             var html = await File.ReadAllTextAsync(templatePath);
             return html.Replace("{{CODE}}", code);
         }
+
+        /// <summary>
+        /// Envía un código de recuperación de contraseña al correo electrónico del usuario.
+        /// </summary>
+        /// <param name="email">El correo electrónico del usuario.</param>
+        /// <param name="code">El código de recuperación a enviar.</param>
+        /// <returns></returns>
+        public async Task SendPasswordRecoverEmailAsync(string email, string code)
+        {
+            var htmlBody = await LoadTemplate("PasswordRecover", code);
+
+            var message = new EmailMessage
+            {
+                To = email,
+                Subject = _configuration["EmailConfiguration:PasswordRecoverSubject"] ?? throw new ArgumentNullException("El asunto del correo de recuperación de contraseña no puede ser nulo."),
+                From = _configuration["EmailConfiguration:From"] ?? throw new ArgumentNullException("La configuración de 'From' no puede ser nula."),
+                HtmlBody = htmlBody
+            };
+            await _resend.EmailSendAsync(message);
+        }
     }
 }

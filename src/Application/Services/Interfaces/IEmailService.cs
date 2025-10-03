@@ -17,5 +17,12 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// </summary>
         /// <param name="email">El correo electrónico del usuario.</param>
         Task SendWelcomeEmailAsync(string email);
+
+        /// <summary>
+        /// Envía un código de recuperación de contraseña al correo electrónico del usuario.
+        /// </summary>
+        /// <param name="email">El correo electrónico del usuario.</param>
+        /// <param name="code">El código de recuperación a enviar.</param>
+        Task SendPasswordRecoverEmailAsync(string email, string code);
     }
 }

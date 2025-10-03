@@ -44,5 +44,6 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// <returns>Un string que representa el mensaje de éxito del reenvío.</returns>
         Task<string> ResendEmailVerificationCodeAsync(ResendEmailVerificationDTO resendEmailVerificationCodeDTO);
 
+        Task<string> PasswordRecoverAsync(PasswordRecoverDTO passwordRecoverDTO, HttpContext httpContext);
     }
 }
