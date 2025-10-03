@@ -198,7 +198,7 @@ namespace TiendaUCN.src.Application.Services.Implements
                 throw new Exception("Error al confirmar el correo electrónico.");
             }
             throw new Exception("Error al verificar el correo electrónico.");
-        }  
+        }
 
         /// <summary>
         /// Reenvía el código de verificación al correo electrónico del usuario.
@@ -235,6 +235,46 @@ namespace TiendaUCN.src.Application.Services.Implements
             await _emailService.SendVerificationCodeEmailAsync(user.Email!, newCode);
             Log.Information($"Se ha reenviado un nuevo código de verificación al correo electrónico: {resendEmailVerificationCodeDTO.Email}");
             return "Se ha reenviado un nuevo código de verificación a su correo electrónico.";
+        }
+        
+        /// <summary>
+        /// Envía un código de recuperación de contraseña al correo electrónico del usuario.
+        /// </summary>
+        /// <param name="passwordRecoverDTO">DTO que contiene el correo electrónico del usuario.</param>
+        /// <param name="httpContext">El contexto HTTP actual.</param>
+        /// <returns>Un string que representa el mensaje de éxito del envío.</returns>
+
+        public async Task<string> PasswordRecoverAsync(PasswordRecoverDTO passwordRecoverDTO, HttpContext httpContext)
+        {
+            var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "IP desconocida";
+            Log.Information($"Intento de recuperación de contraseña para el usuario: {passwordRecoverDTO.Email} desde la IP: {ipAddress}");
+
+            User? user = await _userRepository.GetByEmailAsync(passwordRecoverDTO.Email);
+            if (user == null)
+            {
+                Log.Warning($"El usuario con el correo {passwordRecoverDTO.Email} no existe.");
+                throw new KeyNotFoundException("El usuario no existe.");
+            }
+            if (!user.EmailConfirmed)
+            {
+                Log.Warning($"El usuario con el correo {passwordRecoverDTO.Email} no ha confirmado su correo electrónico.");
+                throw new InvalidOperationException("El correo electrónico del usuario no ha sido confirmado.");
+            }
+
+            string code = new Random().Next(100000, 999999).ToString();
+            var verificationCode = new VerificationCode
+            {
+                UserId = user.Id,
+                Code = code,
+                CodeType = CodeType.PasswordReset,
+                ExpiryDate = DateTime.UtcNow.AddMinutes(_verificationCodeExpirationTimeInMinutes)
+            };
+            var createdVerificationCode = await _verificationCodeRepository.CreateAsync(verificationCode);
+            Log.Information($"Código de recuperación de contraseña generado para el usuario: {passwordRecoverDTO.Email} - Código: {createdVerificationCode.Code}");
+
+            await _emailService.SendPasswordRecoverEmailAsync(passwordRecoverDTO.Email, createdVerificationCode.Code);
+            Log.Information($"Se ha enviado un código de recuperación de contraseña al correo electrónico: {passwordRecoverDTO.Email}");
+            return "Se ha enviado un código de recuperación de contraseña a su correo electrónico.";
         }      
     }
 }

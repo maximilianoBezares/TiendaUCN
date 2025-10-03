@@ -64,5 +64,17 @@ namespace TiendaUCN.src.api.Controllers
             var message = await _userService.ResendEmailVerificationCodeAsync(resendEmailVerificationCodeDTO);
             return Ok(new GenericResponse<string>("Código de verificación reenviado exitosamente", message));
         }
+
+        /// <summary>
+        /// Envía un código de recuperación de contraseña al correo electrónico del usuario.
+        /// </summary>
+        /// <param name="passwordRecoverDTO">DTO que contiene el correo electrónico del usuario.</param>
+        /// <returns>Un IActionResult que representa el resultado de la operación.</returns>
+        [HttpPost("recover-password")]
+        public async Task<IActionResult> PasswordRecover([FromBody] PasswordRecoverDTO passwordRecoverDTO)
+        {
+            var message = await _userService.PasswordRecoverAsync(passwordRecoverDTO, HttpContext);
+            return Ok(new GenericResponse<string>("Código de recuperación de contraseña enviado exitosamente", message));
+        }
     }    
 }
