@@ -76,5 +76,18 @@ namespace TiendaUCN.src.api.Controllers
             var message = await _userService.PasswordRecoverAsync(passwordRecoverDTO, HttpContext);
             return Ok(new GenericResponse<string>("Código de recuperación de contraseña enviado exitosamente", message));
         }
+
+        /// <summary>
+        /// Restablece la contraseña del usuario.
+        /// </summary>
+        /// <param name="resetPasswordDTO">DTO que contiene el correo electrónico, el código
+        /// y la nueva contraseña del usuario.</param>
+        /// <returns>Un IActionResult que representa el resultado de la operación.</returns>
+        [HttpPatch("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO resetPasswordDTO)
+        {
+            var message = await _userService.ResetPasswordAsync(resetPasswordDTO);
+            return Ok(new GenericResponse<string>("Contraseña restablecida exitosamente", message));
+        }
     }    
 }

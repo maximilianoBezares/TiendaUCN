@@ -85,5 +85,13 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
         /// </summary>
         /// <returns>Número de usuarios eliminados</returns>
         Task<int> DeleteUnconfirmedAsync();
+
+        /// <summary>
+        /// Actualiza la contraseña de un usuario.
+        /// </summary>
+        /// <param name="user">Usuario al que se le actualizará la contraseña</param>
+        /// <param name="newPassword">Nueva contraseña</param>
+        /// <returns>True si la actualización fue exitosa, false en caso contrario</returns
+        Task<bool> UpdatePasswordAsync(User user, string newPassword);
     }
 }
