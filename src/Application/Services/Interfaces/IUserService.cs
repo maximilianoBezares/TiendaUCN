@@ -44,6 +44,20 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// <returns>Un string que representa el mensaje de éxito del reenvío.</returns>
         Task<string> ResendEmailVerificationCodeAsync(ResendEmailVerificationDTO resendEmailVerificationCodeDTO);
 
+        /// <summary>
+        /// Inicia el proceso de recuperación de contraseña.
+        /// </summary>
+        /// <param name="passwordRecoverDTO">DTO que contiene el correo electrónico del usuario.</param>
+        /// <param name="httpContext">El contexto HTTP actual.</param>
+        /// <returns>Un string que representa el mensaje de éxito del inicio de la recuperación de contraseña.</returns>
         Task<string> PasswordRecoverAsync(PasswordRecoverDTO passwordRecoverDTO, HttpContext httpContext);
+
+        /// <summary>
+        /// Restablece la contraseña del usuario.
+        /// </summary>
+        /// <param name="resetPasswordDTO">DTO que contiene el correo electrónico, el código
+        /// y la nueva contraseña del usuario.</param>
+        /// <returns>Un string que representa el mensaje de éxito del restablecimiento de la
+        Task<string> ResetPasswordAsync(ResetPasswordDTO resetPasswordDTO);
     }
 }

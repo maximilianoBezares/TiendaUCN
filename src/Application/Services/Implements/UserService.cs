@@ -23,7 +23,6 @@ namespace TiendaUCN.src.Application.Services.Implements
         private readonly IConfiguration _configuration;
         private readonly IVerificationCodeRepository _verificationCodeRepository;
         private readonly int _verificationCodeExpirationTimeInMinutes;
-
         public UserService(ITokenService tokenService, IUserRepository userRepository, IEmailService emailService, IVerificationCodeRepository verificationCodeRepository, IConfiguration configuration)
         {
             _tokenService = tokenService;
@@ -236,7 +235,7 @@ namespace TiendaUCN.src.Application.Services.Implements
             Log.Information($"Se ha reenviado un nuevo código de verificación al correo electrónico: {resendEmailVerificationCodeDTO.Email}");
             return "Se ha reenviado un nuevo código de verificación a su correo electrónico.";
         }
-        
+
         /// <summary>
         /// Envía un código de recuperación de contraseña al correo electrónico del usuario.
         /// </summary>
@@ -275,6 +274,71 @@ namespace TiendaUCN.src.Application.Services.Implements
             await _emailService.SendPasswordRecoverEmailAsync(passwordRecoverDTO.Email, createdVerificationCode.Code);
             Log.Information($"Se ha enviado un código de recuperación de contraseña al correo electrónico: {passwordRecoverDTO.Email}");
             return "Se ha enviado un código de recuperación de contraseña a su correo electrónico.";
-        }      
+        }
+
+        /// <summary>
+        /// Restablece la contraseña del usuario.
+        /// </summary>
+        /// <param name="resetPasswordDTO">DTO que contiene el correo electrónico, el código
+        /// y la nueva contraseña del usuario.</param>
+        /// <returns>Un string que representa el mensaje de éxito del restablecimiento de la contraseña.</returns>
+        public async Task<string> ResetPasswordAsync(ResetPasswordDTO resetPasswordDTO)
+        {
+            User? user = await _userRepository.GetByEmailAsync(resetPasswordDTO.Email);
+            if (user == null)
+            {
+                Log.Warning($"El usuario con el correo {resetPasswordDTO.Email} no existe.");
+                throw new KeyNotFoundException("El usuario no existe.");
+            }
+
+            if (!user.EmailConfirmed)
+            {
+                Log.Warning($"El usuario con el correo {resetPasswordDTO.Email} no ha confirmado su correo electrónico.");
+                throw new InvalidOperationException("El correo electrónico del usuario no ha sido confirmado.");
+            }
+
+            CodeType codeType = CodeType.PasswordReset;
+
+            VerificationCode? verificationCode = await _verificationCodeRepository.GetLatestByUserIdAsync(user.Id, codeType);
+            if (verificationCode == null)
+            {
+                Log.Warning($"No se encontró un código de recuperación de contraseña para el usuario: {resetPasswordDTO.Email}");
+                throw new KeyNotFoundException("El código de verificación no existe.");
+            }
+
+            if (verificationCode.Code != resetPasswordDTO.VerificationCode || DateTime.UtcNow >= verificationCode.ExpiryDate)
+            {
+                int attempsCountUpdated = await _verificationCodeRepository.IncreaseAttemptsAsync(user.Id, codeType);
+                Log.Warning($"Código de recuperación incorrecto o expirado para {resetPasswordDTO.Email}. Intentos: {attempsCountUpdated}");
+
+                if (attempsCountUpdated >= 5)
+                {
+                    bool codeDeleteResult = await _verificationCodeRepository.DeleteByUserIdAsync(user.Id, codeType);
+                    if (codeDeleteResult)
+                    {
+                        Log.Warning($"Se eliminó el código de verificación para {resetPasswordDTO.Email} por límite de intentos.");
+                        throw new ArgumentException("Se alcanzó el límite de intentos. Inicie nuevamente el proceso de recuperación.");
+                    }
+                }
+
+                if (DateTime.UtcNow >= verificationCode.ExpiryDate)
+                    throw new ArgumentException("El código de verificación ha expirado.");
+                else
+                    throw new ArgumentException($"El código es incorrecto, quedan {5 - attempsCountUpdated} intentos.");
+            }
+
+            var success = await _userRepository.UpdatePasswordAsync(user, resetPasswordDTO.NewPassword);
+            if (!success)
+            {
+                Log.Error($"No se pudo actualizar la contraseña del usuario {resetPasswordDTO.Email}");
+                throw new Exception("Error al actualizar la contraseña.");
+            }
+
+            await _verificationCodeRepository.DeleteByUserIdAsync(user.Id, codeType);
+
+            Log.Information($"La contraseña del usuario {resetPasswordDTO.Email} se actualizó correctamente.");
+
+            return "La contraseña se ha restablecido correctamente.";
+        }
     }
 }

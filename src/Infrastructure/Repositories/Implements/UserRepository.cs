@@ -168,5 +168,18 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
             var roles = await _userManager.GetRolesAsync(user);
             return roles.FirstOrDefault()!;
         }
+
+        /// <summary>
+        /// Actualiza la contraseña del usuario.
+        /// </summary>
+        /// <param name="user">Usuario al cual se le actualizará la contraseña</param>
+        /// <param name="newPassword">Nueva contraseña</param>
+        /// <returns>True si la actualización fue exitosa, false en caso contrario</returns
+        public async Task<bool> UpdatePasswordAsync(User user, string newPassword)
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+            return result.Succeeded;
+        }   
     }
 }
