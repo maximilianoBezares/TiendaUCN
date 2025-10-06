@@ -42,7 +42,7 @@ namespace TiendaUCN.src.Application.DTO.AuthDTO
         [Required(ErrorMessage = "El nombre es obligatorio.")]
         [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-]+$", ErrorMessage = "El Nombre solo puede contener carácteres del abecedario español.")]
         [MinLength(2, ErrorMessage = "El nombre debe tener mínimo 2 letras.")]
-        [MaxLength(20, ErrorMessage = "El nombre debe tener máximo 20 letras.")]
+        [MaxLength(50, ErrorMessage = "El nombre debe tener máximo 50 letras.")]
         public required string FirstName { get; set; }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace TiendaUCN.src.Application.DTO.AuthDTO
         [Required(ErrorMessage = "El apellido es obligatorio.")]
         [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-]+$", ErrorMessage = "El Apellido solo puede contener carácteres del abecedario español.")]
         [MinLength(2, ErrorMessage = "El apellido debe tener mínimo 2 letras.")]
-        [MaxLength(20, ErrorMessage = "El apellido debe tener máximo 20 letras.")]
+        [MaxLength(50, ErrorMessage = "El apellido debe tener máximo 50 letras.")]
         public required string LastName { get; set; }
 
         /// <summary>
