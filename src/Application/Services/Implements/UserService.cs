@@ -9,6 +9,8 @@ using TiendaUCN.src.Application.Services.Interfaces;
 using TiendaUCN.src.Domain.Models;
 using TiendaUCN.src.Infrastructure.Repositories.Interfaces;
 using TiendaUCN.src.Application.Mappers;
+using TiendaUCN.src.Application.DTO.UserProfileDTO;
+
 
 namespace TiendaUCN.src.Application.Services.Implements
 {
@@ -339,6 +341,25 @@ namespace TiendaUCN.src.Application.Services.Implements
             Log.Information($"La contraseña del usuario {resetPasswordDTO.Email} se actualizó correctamente.");
 
             return "La contraseña se ha restablecido correctamente.";
+        }
+
+        /// <summary>
+        /// / Obtiene el perfil del usuario.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        public async Task<UserProfileDataDTO> GetUserProfileAsync(int userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                Log.Warning($"El usuario con ID {userId} no existe.");
+                throw new KeyNotFoundException("El usuario no existe.");
+            }
+            var userProfile = user.Adapt<UserProfileDataDTO>();
+            Log.Information("Perfil del usuario {UserId} accedido exitosamente en {Timestamp}", userId, DateTime.UtcNow);
+            return userProfile;
         }
     }
 }
