@@ -93,5 +93,25 @@ namespace TiendaUCN.src.Application.Services.Implements
             };
             await _resend.EmailSendAsync(message);
         }
+
+        /// <summary>
+        /// Envía un código de verificación para la actualización de perfil al correo electrónico del usuario
+        /// </summary>
+        /// <param name="email">El correo electrónico del usuario.</param>
+        /// <param name="code">El código de verificación a enviar.</param>
+        /// <returns></returns>
+        public async Task SendProfileUpdateVerificationCodeEmailAsync(string email, string code)
+        {
+            var htmlBody = await LoadTemplate("ProfileUpdateVerificationCode", code);
+
+            var message = new EmailMessage
+            {
+                To = email,
+                Subject = _configuration["EmailConfiguration:ProfileUpdateVerificationSubject"] ?? throw new ArgumentNullException("El asunto del correo de verificación de actualización de perfil no puede ser nulo."),
+                From = _configuration["EmailConfiguration:From"] ?? throw new ArgumentNullException("La configuración de 'From' no puede ser nula."),
+                HtmlBody = htmlBody
+            };
+            await _resend.EmailSendAsync(message);
+        }
     }
 }

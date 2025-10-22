@@ -1,3 +1,4 @@
+using TiendaUCN.src.Application.DTO.UserProfileDTO;
 using TiendaUCN.src.Domain.Models;
 
 namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
@@ -93,5 +94,13 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
         /// <param name="newPassword">Nueva contraseña</param>
         /// <returns>True si la actualización fue exitosa, false en caso contrario</returns
         Task<bool> UpdatePasswordAsync(User user, string newPassword);
+
+        /// <summary>
+        /// Actualiza el perfil de un usuario por su ID.
+        /// </summary>
+        /// <param name="userId">ID del usuario.</param>
+        /// <param name="updateProfileDTO">DTO que contiene los datos actualizados del perfil del usuario.</param>
+        /// <returns>True si la actualización fue exitosa, false en caso contrario</returns
+        Task<bool> UpdateUserProfileAsync(int userId, UpdateProfileDTO updateProfileDTO);
     }
 }

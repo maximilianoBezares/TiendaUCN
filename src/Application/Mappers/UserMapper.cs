@@ -37,7 +37,7 @@ namespace TiendaUCN.src.Application.Mappers
 
         public static void ConfigureUserProfileMappings()
         {
-            TypeAdapterConfig<User, UserProfileDataDTO>.NewConfig()
+            TypeAdapterConfig<User, UpdateProfileDTO>.NewConfig()
             .Map(dest => dest.FirstName, src => src.FirstName)
             .Map(dest => dest.LastName, src => src.LastName)
             .Map(dest => dest.BirthDate, src => src.BirthDate)

@@ -5,6 +5,7 @@ using Serilog;
 using TiendaUCN.src.Domain.Models;
 using TiendaUCN.src.Infrastructure.Data;
 using TiendaUCN.src.Infrastructure.Repositories.Interfaces;
+using TiendaUCN.src.Application.DTO.UserProfileDTO;
 
 namespace TiendaUCN.src.Infrastructure.Repositories.Implements
 {
@@ -179,7 +180,59 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         {
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+            if (!result.Succeeded)
+            {
+                Log.Error($"Error al actualizar la contraseña del usuario con ID: {user.Id}. Errores: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+            }
+            await _userManager.UpdateSecurityStampAsync(user);
             return result.Succeeded;
-        }   
-    }
+        }
+
+        /// <summary>
+        /// Actualiza el perfil de un usuario por su ID.
+        /// </summary>
+        /// <param name="userId">ID del usuario.</param>
+        /// <param name="updateProfileDTO">DTO que contiene los datos actualizados del perfil del usuario.</param>
+        /// <returns>True si la actualización fue exitosa, false en caso contrario</returns
+        public async Task<bool> UpdateUserProfileAsync(int userId, UpdateProfileDTO updateProfileDTO)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return false;
+            }
+            if (!string.Equals(user.Email, updateProfileDTO.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                bool emailExists = await _context.Users.AnyAsync(u => u.Email == updateProfileDTO.Email && u.Id != userId);
+                if (emailExists)
+                    throw new ArgumentException("El correo electrónico ya está registrado por otro usuario.");
+            }
+            if (!string.Equals(user.Rut, updateProfileDTO.Rut, StringComparison.OrdinalIgnoreCase))
+            {
+                bool rutExists = await _context.Users.AnyAsync(u => u.Rut == updateProfileDTO.Rut && u.Id != userId);
+                if (rutExists)
+                    throw new ArgumentException("El RUT ya está registrado por otro usuario.");
+            }
+            user.FirstName = updateProfileDTO.FirstName;
+            user.LastName = updateProfileDTO.LastName;
+            user.BirthDate = updateProfileDTO.BirthDate;
+            user.Rut = updateProfileDTO.Rut;
+            user.Email = updateProfileDTO.Email;
+            user.PhoneNumber = updateProfileDTO.PhoneNumber;
+            if (!string.IsNullOrEmpty(updateProfileDTO.Gender))
+            {
+                if (Enum.TryParse<Gender>(updateProfileDTO.Gender, out var gender))
+                {
+                    user.Gender = gender;
+                }
+                else
+                {
+                    throw new ArgumentException("Género inválido.");
+                }
+            }
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+    }    
 }
