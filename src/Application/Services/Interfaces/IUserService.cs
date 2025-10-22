@@ -1,5 +1,6 @@
 using TiendaUCN.src.Application.DTO;
 using TiendaUCN.src.Application.DTO.AuthDTO;
+using TiendaUCN.src.Application.DTO.UserProfileDTO;
 
 namespace TiendaUCN.src.Application.Services.Interfaces
 {
@@ -59,5 +60,36 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// y la nueva contraseña del usuario.</param>
         /// <returns>Un string que representa el mensaje de éxito del restablecimiento de la
         Task<string> ResetPasswordAsync(ResetPasswordDTO resetPasswordDTO);
+
+        /// <summary>
+        /// Obtiene el perfil de un usuario por su ID.
+        /// </summary>
+        /// <param name="userId">ID del usuario.</param>
+        /// <returns>Un UserProfileDataDTO que representa el perfil del usuario.</returns>
+        Task<UpdateProfileDTO> GetUserProfileAsync(int userId);
+
+        /// <summary>
+        /// Actualiza el perfil de un usuario por su ID.
+        /// </summary>
+        /// <param name="userId">ID del usuario.</param>
+        /// <param name="userProfileDataDTO">DTO que contiene los datos actualizados del perfil del usuario.</param>
+        /// <returns>Un string que representa el mensaje de éxito de la actualización del perfil.</returns>
+        Task<string> UpdateUserProfileAsync(int userId, UpdateProfileDTO updateProfileDTO);
+
+        /// <summary>
+        /// Envía un código de verificación para actualizar el correo electrónico del usuario.
+        /// </summary>
+        /// <param name="userId">ID del usuario.</param>
+        /// <param name="httpContext">El contexto HTTP actual.</param>
+        /// <returns>Un string que representa el mensaje de éxito del envío del código de verificación.</returns>
+        Task<string> SendUpdateUserEmailVerificationCodeAsync(int userId, UpdateUserEmailVerificationDTO updateUserEmailVerificationDTO, HttpContext httpContext);
+
+        /// <summary>
+        /// Cambia la contraseña de un usuario por su ID.
+        /// </summary>
+        /// <param name="userId">ID del usuario.</param>
+        /// <param name="changePasswordDTO">DTO que contiene la contraseña actual y la nueva contraseña del usuario.</param>
+        /// <returns>Un string que representa el mensaje de éxito del cambio de contraseña.</returns
+        Task<string> ChangePasswordAsync(int userId, ChangePasswordDTO changePasswordDTO);
     }
 }

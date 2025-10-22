@@ -72,21 +72,45 @@ builder
     })
     .AddJwtBearer(options =>
     {
-        string jwtSecret =
-            builder.Configuration["JWTSecret"]
-            ?? throw new InvalidOperationException("La clave secreta JWT no está configurada.");
-        options.TokenValidationParameters =
-            new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+        string jwtSecret = builder.Configuration["JWTSecret"] ?? throw new InvalidOperationException("La clave secreta JWT no está configurada.");
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwtSecret)),
+            ValidateLifetime = true,
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero //Sin tolerencia a tokens expirados
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = context =>
             {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
-                    System.Text.Encoding.UTF8.GetBytes(jwtSecret)
-                ),
-                ValidateLifetime = true,
-                ValidateIssuer = false,
-                ValidateAudience = false,
-                ClockSkew = TimeSpan.Zero, //Sin tolerencia a tokens expirados
-            };
+                context.HandleResponse();
+                var traceId = Guid.NewGuid().ToString();
+                context.Response.Headers["trace-id"] = traceId;
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+
+                var error = new TiendaUCN.src.Application.DTO.BaseResponse.ErrorDetail(
+                    "No autorizado",
+                    "No se proporcionó un token de autenticación válido.");
+                var json = System.Text.Json.JsonSerializer.Serialize(
+                    new
+                    {
+                        title = "No autorizado",
+                        status = 401,
+                        detail = "No se proporcionó un token de autenticación válido.",
+                        traceId = traceId
+                    },
+                    new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }
+                );
+
+                Log.Warning("Intento de acceso no autorizado. Trace ID: {TraceId}", traceId);
+                return context.Response.WriteAsync(json);
+            }
+        };
     });
 #endregion
 
@@ -201,6 +225,7 @@ using (var scope = app.Services.CreateScope())
 
 #region Pipeline Configuration
 Log.Information("Configurando el pipeline de la aplicación");
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -217,6 +242,5 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
 app.Run();
 #endregion

@@ -9,7 +9,8 @@ namespace TiendaUCN.src.Domain.Models
     {
         EmailVerification,
         PasswordReset,
-        PasswordChange
+        PasswordChange,
+        UpdateUserProfile
     }
 
     public class VerificationCode

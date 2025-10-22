@@ -1,6 +1,7 @@
 using Mapster;
 using TiendaUCN.src.Domain.Models;
 using TiendaUCN.src.Application.DTO.AuthDTO;
+using TiendaUCN.src.Application.DTO.UserProfileDTO;
 
 namespace TiendaUCN.src.Application.Mappers
 {
@@ -15,6 +16,7 @@ namespace TiendaUCN.src.Application.Mappers
         public static void ConfigureAllMappings()
         {
             ConfigureAuthMappings();
+            ConfigureUserProfileMappings();
         }
 
         /// <summary>
@@ -32,5 +34,17 @@ namespace TiendaUCN.src.Application.Mappers
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
                 .Map(dest => dest.EmailConfirmed, src => false);
         }
+
+        public static void ConfigureUserProfileMappings()
+        {
+            TypeAdapterConfig<User, UpdateProfileDTO>.NewConfig()
+            .Map(dest => dest.FirstName, src => src.FirstName)
+            .Map(dest => dest.LastName, src => src.LastName)
+            .Map(dest => dest.BirthDate, src => src.BirthDate)
+            .Map(dest => dest.Rut, src => src.Rut)
+            .Map(dest => dest.Email, src => src.Email)
+            .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
+            .Map(dest => dest.Gender, src => src.Gender.ToString());
+        }        
     }
 }
