@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Resend;
 using Serilog;
 using TiendaUCN.src.api.Middlewares;
+using TiendaUCN.src.API.Middlewares;
 using TiendaUCN.src.Application.Jobs;
 using TiendaUCN.src.Application.Jobs.Interfaces;
 using TiendaUCN.src.Application.Mappers;
@@ -188,7 +189,13 @@ using (var scope = app.Services.CreateScope())
     Log.Information(
         $"Job recurrente '{jobId}' configurado con cron: {cronExpression} en zona horaria: {timeZone.Id}"
     );
-    MapperExtensions.ConfigureMapster(scope.ServiceProvider);
+
+    Log.Information("Registrando Mapeos de Mapster...");
+    scope.ServiceProvider.GetRequiredService<ProductMapper>();
+    scope.ServiceProvider.GetRequiredService<CartMapper>();
+    scope.ServiceProvider.GetRequiredService<OrderMapper>();
+    Log.Information("Mapeos registrados exitosamente.");
+    //MapperExtensions.ConfigureMapster(scope.ServiceProvider);
 }
 #endregion
 
@@ -201,10 +208,15 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = string.Empty;
 });
 
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<CartMiddleware>();
+app.MapOpenApi();
+app.UseCors("AllowAllOrigins");
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.Run();
 #endregion

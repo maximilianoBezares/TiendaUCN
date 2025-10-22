@@ -55,6 +55,36 @@ namespace TiendaUCN.src.Infrastructure.Data
                     Log.Information("Roles creados con éxito.");
                 }
 
+                // Creación de categorías
+                if (!context.Categories.Any())
+                {
+                    var categories = new List<Category>
+                    {
+                        new Category { Name = "Electronics" },
+                        new Category { Name = "Clothing" },
+                        new Category { Name = "Home Appliances" },
+                        new Category { Name = "Books" },
+                        new Category { Name = "Sports" },
+                    };
+                    await context.Categories.AddRangeAsync(categories);
+                    await context.SaveChangesAsync();
+                    Log.Information("Categorías creadas con éxito.");
+                }
+
+                // Creación de marcas
+                if (!await context.Brands.AnyAsync())
+                {
+                    var brands = new List<Brand>
+                    {
+                        new Brand { Name = "Sony" },
+                        new Brand { Name = "Apple" },
+                        new Brand { Name = "HP" },
+                    };
+                    await context.Brands.AddRangeAsync(brands);
+                    await context.SaveChangesAsync();
+                    Log.Information("Marcas creadas con éxito.");
+                }
+
                 // Creación de usuarios
                 if (!await context.Users.AnyAsync())
                 {
@@ -191,37 +221,6 @@ namespace TiendaUCN.src.Infrastructure.Data
                         }
                     }
                     Log.Information("Usuarios creados con éxito.");
-                }
-
-                // Creación de Categorias
-
-                if (!context.Categories.Any())
-                {
-                    var categories = new List<Category>
-                    {
-                        new Category { Name = "Electronics" },
-                        new Category { Name = "Clothing" },
-                        new Category { Name = "Home Appliances" },
-                        new Category { Name = "Books" },
-                        new Category { Name = "Sports" },
-                    };
-                    await context.Categories.AddRangeAsync(categories);
-                    await context.SaveChangesAsync();
-                    Log.Information("Categorías creadas con éxito.");
-                }
-
-                // Creación de marcas
-                if (!await context.Brands.AnyAsync())
-                {
-                    var brands = new List<Brand>
-                    {
-                        new Brand { Name = "Sony" },
-                        new Brand { Name = "Apple" },
-                        new Brand { Name = "HP" },
-                    };
-                    await context.Brands.AddRangeAsync(brands);
-                    await context.SaveChangesAsync();
-                    Log.Information("Marcas creadas con éxito.");
                 }
 
                 // Creación de productos
