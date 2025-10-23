@@ -214,12 +214,12 @@ using (var scope = app.Services.CreateScope())
         $"Job recurrente '{jobId}' configurado con cron: {cronExpression} en zona horaria: {timeZone.Id}"
     );
 
-    Log.Information("Registrando Mapeos de Mapster...");
+    /*Log.Information("Registrando Mapeos de Mapster...");
     scope.ServiceProvider.GetRequiredService<ProductMapper>();
     scope.ServiceProvider.GetRequiredService<CartMapper>();
     scope.ServiceProvider.GetRequiredService<OrderMapper>();
-    Log.Information("Mapeos registrados exitosamente.");
-    //MapperExtensions.ConfigureMapster(scope.ServiceProvider);
+    Log.Information("Mapeos registrados exitosamente.");*/
+    MapperExtensions.ConfigureMapster(scope.ServiceProvider);
 }
 #endregion
 

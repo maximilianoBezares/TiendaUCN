@@ -10,5 +10,7 @@ namespace TiendaUCN.src.Application.DTO.ProductDTO.CustomerDTO
         public required string MainImageURL { get; set; }
         public required string Price { get; set; }
         public required int Discount { get; set; }
+        public required int Stock { get; set; }
+        public required string FinalPrice { get; set; }
     }
 }

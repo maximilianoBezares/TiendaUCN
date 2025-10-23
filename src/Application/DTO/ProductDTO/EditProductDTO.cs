@@ -1,8 +1,12 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace TiendaUCN.src.Application.DTO.ProductDTO
 {
-    public class CreateProductDTO
+    public class EditProductDTO
     {
         [Required(ErrorMessage = "El título del producto es obligatorio.")]
         [StringLength(100, ErrorMessage = "El título no puede exceder los 50 caracteres.")]

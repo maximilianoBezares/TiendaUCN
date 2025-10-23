@@ -1,7 +1,5 @@
 using Mapster;
 
-
-
 namespace TiendaUCN.src.Application.Mappers
 {
     /// <summary>
@@ -20,12 +18,14 @@ namespace TiendaUCN.src.Application.Mappers
             var productMapper = serviceProvider.GetService<ProductMapper>();
             productMapper?.ConfigureAllMappings();
 
+            var cartMapper = serviceProvider.GetService<CartMapper>();
+            cartMapper?.ConfigureAllMappings();
+
+            var orderMapper = serviceProvider.GetService<OrderMapper>();
+            orderMapper?.ConfigureAllMappings();;
+
             // Configuración global de Mapster para ignorar valores nulos
             TypeAdapterConfig.GlobalSettings.Default.IgnoreNullValues(true);
-
-        
         }
-
-        
     }
 }

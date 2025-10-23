@@ -77,5 +77,12 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
         /// <param name="id">El ID del producto a buscar.</param>
         /// <returns>Una tarea que representa la operación asíncrona, con el producto encontrado o null si no se encuentra.</returns>
         Task<Product?> GetByIdForAdminAsync(int id);
+
+        /// <summary>
+        /// Desactiva un producto, activando su casilla true de borrado
+        /// </summary>
+        /// <param name="id"></param>El ID del producto a borrar
+        /// <returns></returns>
+        Task SoftDeleteAsync(int id);
     }
 }

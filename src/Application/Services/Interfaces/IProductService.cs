@@ -34,7 +34,7 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// </summary>
         /// <param name="id">El ID del producto a buscar.</param>
         /// <returns>Una tarea que representa la operación asíncrona, con el producto encontrado o null si no se encuentra.</returns>
-        Task<ProductDetailDTO> GetByIdForAdminAsync(int id);
+        Task<ProductDetailAdminDTO> GetByIdForAdminAsync(int id);
 
         /// <summary>
         /// Crea un nuevo producto en el sistema.
@@ -48,6 +48,12 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// </summary>
         /// <param name="id">El ID del producto cuyo estado se cambiará.</param>
         Task ToggleActiveAsync(int id);
+
+        /// <summary>
+        /// Elimina de un producto por su ID.
+        /// </summary>
+        /// <param name="id">El ID del producto que se elimnara.</param>
+        Task SoftDeleteAsync(int id);
     }
 
 }

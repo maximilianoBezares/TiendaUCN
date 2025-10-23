@@ -20,7 +20,6 @@ namespace TiendaUCN.src.Application.Mappers
                 ?? throw new InvalidOperationException(
                     "La URL de la imagen por defecto no puede ser nula."
                 );
-            ConfigureAllMappings();
         }
 
         public void ConfigureAllMappings()
