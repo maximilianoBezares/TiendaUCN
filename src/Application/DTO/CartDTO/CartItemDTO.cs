@@ -11,6 +11,7 @@ namespace TiendaUCN.src.Application.DTO.CartDTO
         public required int Discount { get; set; }
 
         public required string SubTotalPrice { get; set; }
+        public required string Savings { get; set; }
         public required string TotalPrice { get; set; }
     }
 }

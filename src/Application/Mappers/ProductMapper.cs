@@ -69,9 +69,9 @@ namespace TiendaUCN.src.Application.Mappers
                 .Map(
                     dest => dest.MainImageURL,
                     src =>
-                        src.Images.Count() != 0
-                            ? src.Images.Select(i => i.ImageUrl).ToList()
-                            : new List<string> { _defaultImageURL! }
+                        src.Images.FirstOrDefault() != null
+                            ? src.Images.First().ImageUrl
+                            : _defaultImageURL
                 )
                 .Map(dest => dest.Price, src => src.Price.ToString("C"))
                 .Map(dest => dest.Discount, src => src.Discount)
@@ -112,11 +112,11 @@ namespace TiendaUCN.src.Application.Mappers
                 .Map(dest => dest.Id, src => src.Id)
                 .Map(dest => dest.Title, src => src.Title)
                 .Map(
-                    dest => dest.MainImageURL,
+                    dest => dest.ImagesURL,
                     src =>
-                        src.Images.FirstOrDefault() != null
-                            ? src.Images.First().ImageUrl
-                            : _defaultImageURL
+                        src.Images.Count() != 0
+                            ? src.Images.Select(i => i.ImageUrl).ToList()
+                            : new List<string> { _defaultImageURL! }
                 )
                 .Map(dest => dest.Price, src => src.Price.ToString("C"))
                 .Map(dest => dest.Stock, src => src.Stock)

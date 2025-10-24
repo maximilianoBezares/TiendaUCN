@@ -154,5 +154,40 @@ namespace TiendaUCN.src.API.Controllers
                 )
             );
         }
+
+        /// <summary>
+        /// Añade una o más imágenes a un producto existente.
+        /// </summary>
+        /// <param name="id">ID del producto.</param>
+        /// <param name="addImagesDTO">DTO con la lista de imágenes a subir.</param>
+        [HttpPost("{id}/images")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AddImagesAsync(
+            int id,
+            [FromForm] AddImagesDTO addImagesDTO
+        )
+        {
+            await _productService.AddImagesAsync(id, addImagesDTO.Images);
+            // Usa el formato de respuesta estándar de tu controlador
+            return Ok(
+                new GenericResponse<string>(
+                    "Imágenes añadidas",
+                    "Las imágenes se subieron y asociaron al producto exitosamente."
+                )
+            );
+        }
+
+        /// <summary>
+        /// Elimina una imagen específica de un producto.
+        /// </summary>
+        /// <param name="imageId">El ID de la imagen a eliminar.</param>
+        [HttpDelete("images/{imageId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteImageAsync(int imageId)
+        {
+            await _productService.DeleteImageAsync(imageId);
+            // Usa el formato de respuesta estándar de tu controlador
+            return Ok(new GenericResponse<string>("Imagen eliminada", "La imagen ha sido eliminada del almacenamiento y de la base de datos."));
+        }
     }
 }

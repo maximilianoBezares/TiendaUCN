@@ -27,7 +27,7 @@ namespace TiendaUCN.src.API.Controllers
         /// </summary>
         /// <returns>Detalles de la orden creada.</returns>
         [HttpPost("create")]
-        [Authorize(Roles = "Customer")]
+        [Authorize]
         public async Task<IActionResult> CreateOrder()
         {
             var userId = (User.Identity?.IsAuthenticated == true ? User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value : null) ?? throw new UnauthorizedAccessException("Usuario no autenticado.");
@@ -41,7 +41,7 @@ namespace TiendaUCN.src.API.Controllers
         /// <param name="orderCode">Código de la orden</param>
         /// <returns>Detalles de la orden encontrada.</returns>
         [HttpGet("detail/{orderCode}")]
-        [Authorize(Roles = "Customer")]
+        [Authorize]
         public async Task<IActionResult> GetOrderDetail(string orderCode)
         {
             var result = await _orderService.GetDetailAsync(orderCode);
@@ -54,7 +54,7 @@ namespace TiendaUCN.src.API.Controllers
         /// <param name="searchParams">Parámetros de búsqueda</param>
         /// <returns>Órdenes del usuario.</returns>
         [HttpGet("user-orders")]
-        [Authorize(Roles = "Customer")]
+        [Authorize]
         public async Task<IActionResult> GetUserOrders([FromQuery] SearchParamsDTO searchParams)
         {
             var userId = (User.Identity?.IsAuthenticated == true ? User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value : null) ?? throw new UnauthorizedAccessException("Usuario no autenticado.");

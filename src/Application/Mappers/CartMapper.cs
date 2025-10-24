@@ -36,6 +36,7 @@ namespace TiendaUCN.src.Application.Mappers
                 .Map(dest => dest.UserId, src => src.UserId)
                 .Map(dest => dest.SubTotalPrice, src => src.SubTotal.ToString("C"))
                 .Map(dest => dest.Items, src => src.CartItems)
+                .Map(dest => dest.Savings, src => (src.SubTotal - src.Total).ToString("C"))
                 .Map(dest => dest.TotalPrice, src => src.Total.ToString("C"));
         }
 
@@ -58,6 +59,15 @@ namespace TiendaUCN.src.Application.Mappers
                 .Map(
                     dest => dest.SubTotalPrice,
                     src => (src.Product.Price * src.Quantity).ToString("C")
+                )
+                .Map(
+                    dest => dest.Savings,
+                    src =>
+                        (
+                            src.Product.Price
+                            * src.Quantity
+                            * ((decimal)src.Product.Discount / 100)
+                        ).ToString("C")
                 )
                 .Map(
                     dest => dest.TotalPrice,

@@ -51,8 +51,6 @@ namespace TiendaUCN.src.Application.Services.Implements
             product.CategoryId = category.Id;
             product.BrandId = brand.Id;
             product.Images = new List<Image>();
-            int productId = await _productRepository.CreateAsync(product);
-            Log.Information("Producto creado: {@Product}", product);
             if (createProductDTO.Images == null || !createProductDTO.Images.Any())
             {
                 Log.Information(
@@ -62,6 +60,10 @@ namespace TiendaUCN.src.Application.Services.Implements
                     "Debe proporcionar al menos una imagen para el producto."
                 );
             }
+
+            int productId = await _productRepository.CreateAsync(product);
+            Log.Information("Producto creado: {@Product}", product);
+
             foreach (var image in createProductDTO.Images)
             {
                 Log.Information("Imagen asociada al producto: {@Image}", image);
@@ -205,5 +207,40 @@ namespace TiendaUCN.src.Application.Services.Implements
 
             await _productRepository.SoftDeleteAsync(id);
         }
+
+        public async Task AddImagesAsync(int id, List<IFormFile> images)
+        {
+            // 1. Verificar que el producto existe
+            var product = await _productRepository.GetByIdForAdminAsync(id);
+            if (product == null)
+            {
+                // Esto será capturado por tu ExceptionHandlingMiddleware
+                throw new KeyNotFoundException($"Producto con ID {id} no encontrado.");
+            }
+
+            // 2. Subir las imágenes
+            if (images == null || !images.Any())
+            {
+                // Esto será capturado por tu ExceptionHandlingMiddleware
+                throw new ArgumentException("No se proporcionaron imágenes.");
+            }
+
+            foreach (var image in images)
+            {
+                Log.Information(
+                    "Asociando nueva imagen al producto {ProductId}: {@Image}",
+                    id,
+                    image.FileName
+                );
+                // Tu FileService ya sabe cómo subir y asociar al producto
+                await _fileService.UploadAsync(image, id);
+            }
+        }
+
+        public async Task DeleteImageAsync(int imageId)
+        {
+            Log.Information("Solicitud para eliminar imagen {ImageId}", imageId);
+            await _fileService.DeleteImageAsync(imageId);
+        }     
     }
 }

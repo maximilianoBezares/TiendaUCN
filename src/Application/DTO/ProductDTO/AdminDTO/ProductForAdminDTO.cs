@@ -7,7 +7,7 @@ namespace TiendaUCN.src.Application.DTO.ProductDTO.AdminDTO
         public required int Id { get; set; }
         public required string Title { get; set; }
         public required string Description { get; set; }
-        public required string MainImageURL { get; set; }
+        public List<string> ImagesURL { get; set; } = new List<string>();
         public required string Price { get; set; }
         public required int Discount { get; set; }
         public required string FinalPrice { get; set; }

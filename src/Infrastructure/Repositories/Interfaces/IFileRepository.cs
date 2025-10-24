@@ -21,5 +21,19 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
         /// <param name="publicId">El identificador público del archivo a eliminar.</param>
         /// <returns>True si el archivo se eliminó correctamente, de lo contrario false y null si la imagen no existe.</returns>
         Task<bool?> DeleteAsync(string publicId);
+
+        /// <summary>
+        /// Obtener la imagen por su id
+        /// </summary>
+        /// <param name="imageId">Id de la imagen a eliminar</param>
+        /// <returns></returns>
+        Task<Image?> GetByIdAsync(int imageId); // Asumiendo que tu modelo se llama 'Image'
+
+        /// <summary>
+        /// Eliminar una imagen de un producto
+        /// </summary>
+        /// <param name="image">Se elimina una imagen, a travez de una instancia de esta</param>
+        /// <returns></returns>
+        Task DeleteAsync(Image image);
     }
 }
