@@ -84,5 +84,12 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
         /// <param name="id"></param>El ID del producto a borrar
         /// <returns></returns>
         Task SoftDeleteAsync(int id);
+        /// <summary>
+        /// Cambia el descuento de un producto
+        /// </summary>
+        /// <param name="id"></param>id del producto a cambiar
+        /// <param name="discount"></param> cantidad de descuento aplicado entre 0 a 100(%)
+        /// <returns></returns>
+        Task UpdateDiscountAsync(int id, int discount);
     }
 }

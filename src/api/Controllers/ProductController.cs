@@ -187,7 +187,33 @@ namespace TiendaUCN.src.API.Controllers
         {
             await _productService.DeleteImageAsync(imageId);
             // Usa el formato de respuesta estándar de tu controlador
-            return Ok(new GenericResponse<string>("Imagen eliminada", "La imagen ha sido eliminada del almacenamiento y de la base de datos."));
+            return Ok(
+                new GenericResponse<string>(
+                    "Imagen eliminada",
+                    "La imagen ha sido eliminada del almacenamiento y de la base de datos."
+                )
+            );
+        }
+
+        /// <summary>
+        /// Actualiza el porcentaje de descuento de un producto.
+        /// </summary>
+        /// <param name="id">El ID del producto.</param>
+        /// <param name="dto">El DTO con el nuevo descuento.</param>
+        [HttpPatch("{id}/discount")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateDiscountAsync(
+            int id,
+            [FromBody] UpdateDiscountDTO dto
+        )
+        {
+            await _productService.UpdateDiscountAsync(id, dto.Discount);
+            return Ok(
+                new GenericResponse<string>(
+                    "Descuento del producto actualizado exitosamente",
+                    $"El descuento del producto ahora es {dto.Discount}%."
+                )
+            );
         }
     }
 }

@@ -241,6 +241,23 @@ namespace TiendaUCN.src.Application.Services.Implements
         {
             Log.Information("Solicitud para eliminar imagen {ImageId}", imageId);
             await _fileService.DeleteImageAsync(imageId);
-        }     
+        }
+
+        /// <summary>
+        /// Actualiza el descuento de un producto.
+        /// </summary>
+        /// <param name="id">ID del producto.</param>
+        /// <param name="discount">Nuevo descuento (0-100).</param>
+        public async Task UpdateDiscountAsync(int id, int discount)
+        {
+            // La validación de rango (0-100) la hace el DTO automáticamente.
+            var product = await _productRepository.GetByIdForAdminAsync(id);
+            if (product == null)
+            {
+                throw new KeyNotFoundException($"Producto con ID {id} no encontrado.");
+            }
+
+            await _productRepository.UpdateDiscountAsync(id, discount);
+        }
     }
 }

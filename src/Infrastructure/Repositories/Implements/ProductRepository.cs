@@ -114,8 +114,8 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
                 .FirstOrDefaultAsync();
         }
 
-        // <summary>
-        // Retorna una lista de productos para el administrador con los parámetros de búsqueda especificados.
+        /// <summary>
+        /// Retorna una lista de productos para el administrador con los parámetros de búsqueda especificados.
         /// </summary>
         /// <param name="searchParams">Parámetros de búsqueda para filtrar los productos.</param>
         /// <returns>Una tarea que representa la operación asíncrona, con una lista de productos para el administrador y el conteo total de productos.</returns>
@@ -297,6 +297,18 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
                     p.SetProperty(p => p.IsAvailable, false) // Lo marca como no disponible
                         .SetProperty(p => p.DeletedAt, true) // Pone la fecha de borrado
                 );
+        }
+
+        /// <summary>
+        /// Actualiza el descuento de un producto.
+        /// </summary>
+        /// <param name="id">ID del producto.</param>
+        /// <param name="discount">Nuevo descuento (0-100).</param>
+        public async Task UpdateDiscountAsync(int id, int discount)
+        {
+            await _context
+                .Products.Where(p => p.Id == id)
+                .ExecuteUpdateAsync(s => s.SetProperty(p => p.Discount, discount));
         }
     }
 }

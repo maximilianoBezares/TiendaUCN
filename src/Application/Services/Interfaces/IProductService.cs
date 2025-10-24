@@ -67,6 +67,13 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// </summary>
         /// <param name="id">El ID de la imagen del producto que se elimnara.</param>
         Task DeleteImageAsync(int imageId);
+        /// <summary>
+        /// Cambia el descuento de un producto
+        /// </summary>
+        /// <param name="id"></param> Id del producto a cambiar
+        /// <param name="discount"></param> descuento entre 0 a 100(%)
+        /// <returns></returns>
+        Task UpdateDiscountAsync(int id, int discount);
     }
 
 }
