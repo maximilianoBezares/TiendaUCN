@@ -34,7 +34,8 @@ namespace TiendaUCN.src.Application.Mappers
                 .Map(dest => dest.PurchasedAt, src => TimeZoneInfo.ConvertTimeFromUtc(src.CreatedAt, _timeZone))
                 .Map(dest => dest.Code, src => src.Code)
                 .Map(dest => dest.Total, src => src.Total.ToString("C"))
-                .Map(dest => dest.SubTotal, src => src.SubTotal.ToString("C"));
+                .Map(dest => dest.SubTotal, src => src.SubTotal.ToString("C"))
+                .Map(dest => dest.Savings, src => (src.SubTotal - src.Total).ToString("C"));
 
             TypeAdapterConfig<Cart, Order>.NewConfig()
                 .Map(dest => dest.Total, src => src.Total)

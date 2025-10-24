@@ -5,6 +5,7 @@ namespace TiendaUCN.src.Application.DTO.OrderDTO
         public required string Code { get; set; }
         public required string Total { get; set; }
         public required string SubTotal { get; set; }
+        public required string Savings { get; set; }
         public required DateTime PurchasedAt { get; set; }
         public required List<OrderItemDTO> Items { get; set; }
     }
