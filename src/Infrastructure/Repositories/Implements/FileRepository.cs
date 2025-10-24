@@ -47,5 +47,17 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
             }
             return null;
         }
+
+        /// <summary>
+        /// Obtiene una imagen específica por su ID.
+        /// </summary>
+        /// <param name="imageId">El ID de la imagen a buscar.</param>
+        /// <returns>La entidad Image o null si no se encuentra.</returns>
+        public async Task<Image?> GetByIdAsync(int imageId)
+        {
+            return await _context.Images
+                .AsNoTracking() // Es buena práctica para operaciones de solo lectura
+                .FirstOrDefaultAsync(i => i.Id == imageId);
+        }
     }
 }

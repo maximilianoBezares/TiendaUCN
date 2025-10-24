@@ -310,7 +310,7 @@ namespace TiendaUCN.src.Application.Services.Implements
                 }
             }
 
-            await _fileRepository.DeleteAsync(image);
+            await _fileRepository.DeleteAsync(image.PublicId);
             Log.Information("Imagen {ImageId} eliminada de la base de datos.", imageId);
         }
     }
