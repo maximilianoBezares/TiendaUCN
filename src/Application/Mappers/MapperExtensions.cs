@@ -20,12 +20,11 @@ namespace TiendaUCN.src.Application.Mappers
             var productMapper = serviceProvider.GetService<ProductMapper>();
             productMapper?.ConfigureAllMappings();
 
+            var categoryMapper = serviceProvider.GetService<CategoryMapper>();
+            categoryMapper?.ConfigureAllMappings();
+
             // Configuración global de Mapster para ignorar valores nulos
             TypeAdapterConfig.GlobalSettings.Default.IgnoreNullValues(true);
-
-        
         }
-
-        
     }
 }

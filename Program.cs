@@ -27,6 +27,7 @@ var connectionString =
 builder.Services.AddScoped<ProductMapper>();
 builder.Services.AddScoped<CartMapper>();
 builder.Services.AddScoped<OrderMapper>();
+builder.Services.AddScoped<CategoryMapper>();
 
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
@@ -47,6 +48,8 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<ICategoriesRepository, CategoriesRepository>();
+builder.Services.AddScoped<ICategoriesService, CategoriesService>();
 
 #region Email Service Configuration
 Log.Information("Configurando servicio de Email");
@@ -202,6 +205,7 @@ app.UseHangfireDashboard(
 Log.Information("Aplicando migraciones a la base de datos");
 using (var scope = app.Services.CreateScope())
 {
+    MapperExtensions.ConfigureMapster(scope.ServiceProvider);
     await DataSeeder.Initialize(scope.ServiceProvider);
     var jobId = nameof(UserJob.DeleteUnconfirmedAsync);
     RecurringJob.AddOrUpdate<UserJob>(
@@ -218,8 +222,8 @@ using (var scope = app.Services.CreateScope())
     scope.ServiceProvider.GetRequiredService<ProductMapper>();
     scope.ServiceProvider.GetRequiredService<CartMapper>();
     scope.ServiceProvider.GetRequiredService<OrderMapper>();
+    scope.ServiceProvider.GetRequiredService<CategoryMapper>();
     Log.Information("Mapeos registrados exitosamente.");
-    //MapperExtensions.ConfigureMapster(scope.ServiceProvider);
 }
 #endregion
 
