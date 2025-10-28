@@ -2,6 +2,15 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace TiendaUCN.src.Domain.Models
 {
+    public enum OrderStatus
+    {
+        Pending,
+        Paid,
+        Shipped,
+        Delivered,
+        Cancelled,
+    }
+
     public class Order
     {
         /// <summary>
@@ -48,5 +57,13 @@ namespace TiendaUCN.src.Domain.Models
         /// Fecha de actualización del pedido.
         /// </summary>
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        /// <summary>
+        /// Estado de la orden
+        /// </summary>
+        public OrderStatus Status { get; set; } = OrderStatus.Pending;
+        /// <summary>
+        /// Id del admin que realizo cambios
+        /// </summary>
+        public string? UpdatedByAdminId { get; set; }
     }
 }
