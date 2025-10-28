@@ -22,5 +22,11 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// <param name="id">ID de la categoría.</param>
         /// <returns>Una tarea que representa la operación asíncrona, con el detalle de la categoría.</returns>
         Task<CategoryDetailDTO> GetCategoryByIdForAdminAsync(int id);
+
+        /// <summary>
+        /// Crea una nueva categoria en el sistema
+        /// </summary>
+        /// <param name="categoryCreate"> datos de la categoria a crear</param>
+        Task<string> CreateCategoryAsync(CategoryCreateDTO categoryCreate);
     }
 }

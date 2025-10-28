@@ -8,6 +8,7 @@ using TiendaUCN.src.Application.DTO.ProductDTO;
 using TiendaUCN.src.Application.Services.Interfaces;
 using TiendaUCN.src.Infrastructure.Repositories.Interfaces;
 using Mapster;
+using TiendaUCN.src.Domain.Models;
 
 namespace TiendaUCN.src.Application.Services.Implements
 {
@@ -61,7 +62,7 @@ namespace TiendaUCN.src.Application.Services.Implements
                 pageSize = categories1.Count()
             };
         }
-   
+
         /// <summary>
         /// Retorna una categoria específica por su ID desde el punto de vista de un admin.
         /// </summary>
@@ -74,6 +75,23 @@ namespace TiendaUCN.src.Application.Services.Implements
             var dto = category.Adapt<CategoryDetailDTO>();
             dto.productCount = await _categoriesRepository.GetProductCountByIdAsync(category.Id);
             return dto;
+        }
+
+        /// <summary>
+        /// Crea una nueva categoria en el sistema
+        /// </summary>
+        /// <param name="categoryCreate"> datos de la categoria a crear</param>
+        public async Task<string> CreateCategoryAsync(CategoryCreateDTO categoryCreate)
+        {
+            Category category = categoryCreate.Adapt<Category>();
+            var categoryName = await _categoriesRepository.GetByNameAsync(category.Name);
+            if (categoryName != null)
+            {
+                throw new InvalidOperationException($"Ya existe una categoría con el nombre '{category.Name}'.");
+            }
+            int categoryId = await _categoriesRepository.CreateAsync(category);
+            Log.Information("Categoría creada: {@Category}", category);
+            return categoryId.ToString();
         }
     }
 }

@@ -59,14 +59,38 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
             return (categories1, totalCount);
         }
 
+        /// <summary>
+        /// Obtienne las categorias mediante el id 
+        /// </summary>
         public async Task<Category?> GetByIdAdminAsync(int id)
         {
             return await _context.Categories.AsNoTracking().Where(c => c.Id == id).FirstOrDefaultAsync();
         }
 
+        /// <summary>
+        /// Obtiende la cantidad de productos que hay en una categoria.
+        /// </summary>
         public async Task<int> GetProductCountByIdAsync(int id)
         {
             return await _context.Products.CountAsync(p => p.CategoryId == id);
+        }
+
+        /// <summary>
+        /// Obtiene las categorias mediante el nombre.
+        /// </summary>
+        public async Task<Category?> GetByNameAsync(string name)
+        {
+            return await _context.Categories.AsNoTracking().Where(c => c.Name == name).FirstOrDefaultAsync();
+        }
+
+        /// <summary>
+        /// Crea una categoria en el sistema.
+        /// </summary>
+        public async Task<int> CreateAsync(Category category)
+        {
+            await _context.Categories.AddAsync(category);
+            await _context.SaveChangesAsync();
+            return category.Id;
         }
     }
 }

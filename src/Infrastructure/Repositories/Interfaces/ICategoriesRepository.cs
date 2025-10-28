@@ -13,5 +13,7 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
         Task<(IEnumerable<Category> categories, int totalCount)> GetAllCategoriesAsync(SearchParamsDTO searchParams);
         Task<Category?> GetByIdAdminAsync(int id);
         Task<int> GetProductCountByIdAsync(int id);
+        Task<Category?> GetByNameAsync(string name);
+        Task<int> CreateAsync(Category category);
     }
 }

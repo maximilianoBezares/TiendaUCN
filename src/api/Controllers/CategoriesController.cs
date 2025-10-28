@@ -52,5 +52,17 @@ namespace TiendaUCN.src.api.Controllers
             if (result == null) { throw new KeyNotFoundException($"No se encontró la categoría con ID {id}."); }
             return Ok(new GenericResponse<CategoryDetailDTO>("Categoría obtenida exitosamente", result));
         }
+
+        /// <summary>
+        /// Crea una nueva categoria en el sistema.
+        /// </summary>
+        [HttpPost("admin/categories")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateCategoryAsync([FromBody] CategoryCreateDTO categoryCreate)
+        {
+            var result = await _categoriesService.CreateCategoryAsync(categoryCreate);
+            string location = $"/api/admin/categories/{result}";
+                return Created(location, new GenericResponse<string>("Categoría creada exitosamente", result));
+        }
     }
 }
