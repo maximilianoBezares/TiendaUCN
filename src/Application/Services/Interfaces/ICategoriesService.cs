@@ -15,5 +15,12 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// <param name="searchParams">Parámetros de búsqueda y paginación.</param>
         /// <returns>Una tarea que representa la operación asíncrona, con el listado de categorías.</returns>
         Task<ListedCategoriesDTO> GetCategoriesForAdminAsync(SearchParamsDTO searchParams);
+
+        /// <summary>
+        /// Obtiene una categoría específica por su ID para admin.
+        /// </summary>
+        /// <param name="id">ID de la categoría.</param>
+        /// <returns>Una tarea que representa la operación asíncrona, con el detalle de la categoría.</returns>
+        Task<CategoryDetailDTO> GetCategoryByIdForAdminAsync(int id);
     }
 }

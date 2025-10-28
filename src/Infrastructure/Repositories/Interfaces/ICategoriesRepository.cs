@@ -11,5 +11,7 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
     public interface ICategoriesRepository
     {
         Task<(IEnumerable<Category> categories, int totalCount)> GetAllCategoriesAsync(SearchParamsDTO searchParams);
+        Task<Category?> GetByIdAdminAsync(int id);
+        Task<int> GetProductCountByIdAsync(int id);
     }
 }

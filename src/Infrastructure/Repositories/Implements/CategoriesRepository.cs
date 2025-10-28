@@ -8,6 +8,7 @@ using TiendaUCN.src.Application.DTO.ProductDTO;
 using TiendaUCN.src.Application.DTO.CategoriesDTO;
 using TiendaUCN.src.Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using Mapster;
 
 namespace TiendaUCN.src.Infrastructure.Repositories.Implements
 {
@@ -56,6 +57,16 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
                 .Take(searchParams.PageSize ?? _defaultPageSize)
                 .ToListAsync();
             return (categories1, totalCount);
+        }
+
+        public async Task<Category?> GetByIdAdminAsync(int id)
+        {
+            return await _context.Categories.AsNoTracking().Where(c => c.Id == id).FirstOrDefaultAsync();
+        }
+
+        public async Task<int> GetProductCountByIdAsync(int id)
+        {
+            return await _context.Products.CountAsync(p => p.CategoryId == id);
         }
     }
 }

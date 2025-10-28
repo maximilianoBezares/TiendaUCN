@@ -40,5 +40,17 @@ namespace TiendaUCN.src.api.Controllers
             if (result == null || result.categories.Count == 0) { throw new KeyNotFoundException("No se encontraron categorías."); }
             return Ok(new GenericResponse<ListedCategoriesDTO>("Categorías obtenidas exitosamente", result));
         }
+
+        /// <summary>
+        /// Obtiene una categoría específica por su ID para administradores.
+        /// </summary>
+        [HttpGet("admin/categories/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetCategoryByIdForAdminAsync(int id)
+        {
+            var result = await _categoriesService.GetCategoryByIdForAdminAsync(id);
+            if (result == null) { throw new KeyNotFoundException($"No se encontró la categoría con ID {id}."); }
+            return Ok(new GenericResponse<CategoryDetailDTO>("Categoría obtenida exitosamente", result));
+        }
     }
 }

@@ -61,5 +61,19 @@ namespace TiendaUCN.src.Application.Services.Implements
                 pageSize = categories1.Count()
             };
         }
+   
+        /// <summary>
+        /// Retorna una categoria específica por su ID desde el punto de vista de un admin.
+        /// </summary>
+        /// <param name="id">El ID de la categoria a buscar.</param>
+        /// <returns>Una tarea que representa la operación asíncrona, con el producto encontrado o null si no se encuentra.</returns>
+        public async Task<CategoryDetailDTO> GetCategoryByIdForAdminAsync(int id)
+        {
+            var category = await _categoriesRepository.GetByIdAdminAsync(id) ?? throw new KeyNotFoundException($"Categoria con id {id} no encontrado.");
+            Log.Information("Categoria encontrada: {@Category}", category);
+            var dto = category.Adapt<CategoryDetailDTO>();
+            dto.productCount = await _categoriesRepository.GetProductCountByIdAsync(category.Id);
+            return dto;
+        }
     }
 }
