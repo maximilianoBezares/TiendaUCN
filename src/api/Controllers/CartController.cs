@@ -103,7 +103,7 @@ namespace TiendaUCN.src.API.Controllers
         /// </summary>
         /// <returns>El carrito de compras actualizado.</returns>
         [HttpPost("checkout")]
-        [Authorize(Roles = "Customer")]
+        [Authorize]
         public async Task<IActionResult> CheckoutAsync()
         {
             var buyerId = GetBuyerId();
