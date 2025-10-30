@@ -1,5 +1,6 @@
 using TiendaUCN.src.Application.DTO;
 using TiendaUCN.src.Application.DTO.AuthDTO;
+using TiendaUCN.src.Application.DTO.UserCrudAdminDTOs;
 using TiendaUCN.src.Application.DTO.UserProfileDTO;
 
 namespace TiendaUCN.src.Application.Services.Interfaces
@@ -91,5 +92,10 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// <param name="changePasswordDTO">DTO que contiene la contraseña actual y la nueva contraseña del usuario.</param>
         /// <returns>Un string que representa el mensaje de éxito del cambio de contraseña.</returns
         Task<string> ChangePasswordAsync(int userId, ChangePasswordDTO changePasswordDTO);
+
+        Task<PagedResult<UserListDto>> GetUsersAsync(AdminUserQueryParameters queryParams);
+        Task<UserDetailDto> GetUserDetailAsync(int userId);
+        Task<string> UpdateUserStatusAsync(int adminId, int targetUserId, UpdateUserStatusDto statusDto);
+        Task UpdateUserRoleAsync(int adminId, int targetUserId, UpdateUserRoleDto roleDto);
     }
 }

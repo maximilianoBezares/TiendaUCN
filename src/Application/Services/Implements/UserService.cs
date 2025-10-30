@@ -1,7 +1,9 @@
 using Mapster;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Serilog;
 using TiendaUCN.src.Application.DTO;
 using TiendaUCN.src.Application.DTO.AuthDTO;
+using TiendaUCN.src.Application.DTO.UserCrudAdminDTOs;
 using TiendaUCN.src.Application.DTO.UserProfileDTO;
 using TiendaUCN.src.Application.Mappers;
 using TiendaUCN.src.Application.Services.Interfaces;
@@ -615,7 +617,7 @@ namespace TiendaUCN.src.Application.Services.Implements
             int userId,
             UpdateUserEmailVerificationDTO updateUserEmailVerificationDTO,
             HttpContext httpContext
-            )
+        )
         {
             var user = _userRepository.GetByIdAsync(userId).Result;
             if (user == null)
@@ -623,11 +625,17 @@ namespace TiendaUCN.src.Application.Services.Implements
                 Log.Warning($"El usuario con ID {userId} no existe.");
                 throw new KeyNotFoundException("El usuario no existe.");
             }
-            var usuarioExistente = _userRepository.ExistsByEmailAsync(updateUserEmailVerificationDTO.Email);
+            var usuarioExistente = _userRepository.ExistsByEmailAsync(
+                updateUserEmailVerificationDTO.Email
+            );
             if (usuarioExistente != null && usuarioExistente.Id != userId)
             {
-                Log.Warning($"El correo electrónico {updateUserEmailVerificationDTO.Email} ya está en uso por otro usuario.");
-                throw new InvalidOperationException("El correo electrónico ya está en uso por otro usuario.");
+                Log.Warning(
+                    $"El correo electrónico {updateUserEmailVerificationDTO.Email} ya está en uso por otro usuario."
+                );
+                throw new InvalidOperationException(
+                    "El correo electrónico ya está en uso por otro usuario."
+                );
             }
             var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "IP desconocida";
             Log.Information(
@@ -642,20 +650,30 @@ namespace TiendaUCN.src.Application.Services.Implements
                 CodeType = CodeType.UpdateUserProfile,
                 ExpiryDate = DateTime.UtcNow.AddMinutes(_verificationCodeExpirationTimeInMinutes),
             };
-            var createdVerificationCode = _verificationCodeRepository.CreateAsync(
-                verificationCode
-            ).Result;
+            var createdVerificationCode = _verificationCodeRepository
+                .CreateAsync(verificationCode)
+                .Result;
             Log.Information(
                 $"Código de verificación para actualizar el correo generado para el usuario: {updateUserEmailVerificationDTO.Email} - Código: {createdVerificationCode.Code}"
             );
-            _emailService.SendProfileUpdateVerificationCodeEmailAsync(user.Email!, createdVerificationCode.Code).Wait();
+            _emailService
+                .SendProfileUpdateVerificationCodeEmailAsync(
+                    user.Email!,
+                    createdVerificationCode.Code
+                )
+                .Wait();
             Log.Information(
                 $"Se ha enviado un código de verificación para actualizar el correo electrónico: {updateUserEmailVerificationDTO.Email}"
             );
-            return Task.FromResult("Se ha enviado un código de verificación a su correo electrónico para actualizar el correo.");
+            return Task.FromResult(
+                "Se ha enviado un código de verificación a su correo electrónico para actualizar el correo."
+            );
         }
 
-        public async Task<string> ChangePasswordAsync(int userId, ChangePasswordDTO changePasswordDTO)
+        public async Task<string> ChangePasswordAsync(
+            int userId,
+            ChangePasswordDTO changePasswordDTO
+        )
         {
             User? user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
@@ -664,14 +682,22 @@ namespace TiendaUCN.src.Application.Services.Implements
                 throw new KeyNotFoundException("El usuario no existe.");
             }
 
-            var result = await _userRepository.CheckPasswordAsync(user, changePasswordDTO.CurrentPassword);
+            var result = await _userRepository.CheckPasswordAsync(
+                user,
+                changePasswordDTO.CurrentPassword
+            );
             if (!result)
             {
-                Log.Warning($"El usuario con ID {userId} ha proporcionado una contraseña actual incorrecta.");
+                Log.Warning(
+                    $"El usuario con ID {userId} ha proporcionado una contraseña actual incorrecta."
+                );
                 throw new UnauthorizedAccessException("La contraseña actual es incorrecta.");
             }
 
-            var success = await _userRepository.UpdatePasswordAsync(user, changePasswordDTO.NewPassword);
+            var success = await _userRepository.UpdatePasswordAsync(
+                user,
+                changePasswordDTO.NewPassword
+            );
             if (!success)
             {
                 Log.Error($"No se pudo cambiar la contraseña del usuario con ID {userId}");
@@ -680,6 +706,184 @@ namespace TiendaUCN.src.Application.Services.Implements
 
             Log.Information($"La contraseña del usuario con ID {userId} se cambió correctamente.");
             return "La contraseña se ha cambiado correctamente.";
+        }
+
+        public async Task<PagedResult<UserListDto>> GetUsersAsync(
+            AdminUserQueryParameters queryParams
+        )
+        {
+            var pagedUsers = await _userRepository.GetPagedUsersAsync(queryParams);
+
+            var userListDtos = new List<UserListDto>();
+            foreach (var user in pagedUsers.Items)
+            {
+                var roles = await _userRepository.GetUserRolesAsync(user);
+                var status = "Active";
+                if (user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
+                    status = "Blocked";
+                else if (!user.EmailConfirmed)
+                    status = "Unconfirmed";
+
+                userListDtos.Add(
+                    new UserListDto
+                    {
+                        Id = user.Id,
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        Email = user.Email,
+                        Rut = user.Rut,
+                        Roles = roles.ToList(),
+                        Status = status,
+                        CreatedAt = user.RegisteredAt,
+                    }
+                );
+            }
+
+            return new PagedResult<UserListDto>
+            {
+                Items = userListDtos,
+                TotalCount = pagedUsers.TotalCount,
+                Page = pagedUsers.Page,
+                PageSize = pagedUsers.PageSize,
+            };
+        }
+
+        public async Task<UserDetailDto> GetUserDetailAsync(int userId)
+        {
+            var user = await _userRepository.GetByIdWithRolesAsync(userId);
+            if (user == null)
+            {
+                Log.Warning($"Admin: Intento de obtener detalle de usuario no existente: {userId}");
+                throw new KeyNotFoundException("Usuario no encontrado.");
+            }
+
+            var roles = await _userRepository.GetUserRolesAsync(user);
+            var status = "Active";
+            if (user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
+                status = "Blocked";
+            else if (!user.EmailConfirmed)
+                status = "Unconfirmed";
+
+            return new UserDetailDto
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Rut = user.Rut,
+                PhoneNumber = user.PhoneNumber,
+                Gender = user.Gender.ToString(),
+                BirthDate = user.BirthDate,
+                Roles = roles.ToList(),
+                Status = status,
+                CreatedAt = user.RegisteredAt,
+                UpdatedAt = user.UpdatedAt,
+            };
+        }
+
+        public async Task<string> UpdateUserStatusAsync(
+            int adminId,
+            int targetUserId,
+            UpdateUserStatusDto statusDto
+        )
+        {
+            if (adminId == targetUserId)
+            {
+                Log.Warning($"Admin {adminId} intentó bloquearse a sí mismo.");
+                throw new InvalidOperationException(
+                    "Un administrador no puede bloquearse a sí mismo."
+                );
+            }
+
+            var targetUser = await _userRepository.GetByIdAsync(targetUserId);
+            if (targetUser == null)
+                throw new KeyNotFoundException("Usuario objetivo no encontrado.");
+
+            bool blockUser = statusDto.Status == "blocked";
+
+            if (blockUser)
+            {
+                bool isTargetAdmin = await _userRepository.IsInRoleAsync(targetUser, "admin");
+                if (isTargetAdmin)
+                {
+                    int adminCount = await _userRepository.CountActiveUsersInRoleAsync("admin");
+                    if (adminCount <= 1)
+                    {
+                        Log.Error(
+                            $"Admin {adminId} intentó bloquear al último administrador activo (ID: {targetUserId})."
+                        );
+                        throw new InvalidOperationException(
+                            "No se puede bloquear al último administrador activo del sistema."
+                        );
+                    }
+                }
+            }
+
+            var result = await _userRepository.SetLockoutAsync(targetUser, blockUser);
+            if (!result.Succeeded)
+                throw new Exception(
+                    $"Error al actualizar estado: {string.Join(", ", result.Errors.Select(e => e.Description))}"
+                );
+
+            // R138: Auditoría
+            Log.Information(
+                $"Admin {adminId} actualizó el estado de {targetUserId} a '{statusDto.Status}'. Razón: {statusDto.Reason ?? "N/A"}"
+            );
+            return blockUser
+                ? "Usuario bloqueado exitosamente."
+                : "Usuario desbloqueado exitosamente.";
+        }
+
+        public async Task UpdateUserRoleAsync(
+            int adminId,
+            int targetUserId,
+            UpdateUserRoleDto roleDto
+        )
+        {
+            var targetUser = await _userRepository.GetByIdAsync(targetUserId);
+            if (targetUser == null)
+                throw new KeyNotFoundException("Usuario objetivo no encontrado.");
+
+            var currentRoles = await _userRepository.GetUserRolesAsync(targetUser);
+
+            if (currentRoles.Contains(roleDto.Role))
+            {
+                throw new InvalidOperationException(
+                    "Asignación redundante: El usuario ya tiene este rol."
+                );
+            }
+
+            if (
+                adminId == targetUserId
+                && currentRoles.Contains("Admin")
+                && roleDto.Role != "Admin"
+            )
+            {
+                // Llama al método que solo cuenta admins ACTIVOS
+                int adminCount = await _userRepository.CountActiveUsersInRoleAsync("Admin");
+
+                if (adminCount <= 1)
+                {
+                    Log.Error(
+                        $"Admin {adminId} intentó quitarse su propio rol de admin, siendo el último admin ACTIVO."
+                    );
+                    throw new InvalidOperationException(
+                        "No se puede quitar el rol al último administrador activo del sistema."
+                    );
+                }
+            }
+
+            var result = await _userRepository.UpdateUserRolesAsync(
+                targetUser,
+                currentRoles,
+                roleDto.Role
+            );
+            if (!result.Succeeded)
+                throw new Exception(
+                    $"Error al actualizar rol: {string.Join(", ", result.Errors.Select(e => e.Description))}"
+                );
+
+            Log.Information($"Admin {adminId} cambió el rol de {targetUserId} a '{roleDto.Role}'.");
         }
     }
 }
