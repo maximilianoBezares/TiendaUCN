@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Identity;
+using TiendaUCN.src.Application.DTO.UserCrudAdminDTOs;
 using TiendaUCN.src.Application.DTO.UserProfileDTO;
 using TiendaUCN.src.Domain.Models;
 
@@ -102,5 +104,14 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
         /// <param name="updateProfileDTO">DTO que contiene los datos actualizados del perfil del usuario.</param>
         /// <returns>True si la actualización fue exitosa, false en caso contrario</returns
         Task<bool> UpdateUserProfileAsync(int userId, UpdateProfileDTO updateProfileDTO);
+
+        Task<PagedResult<User>> GetPagedUsersAsync(AdminUserQueryParameters queryParams);
+        Task<User?> GetByIdWithRolesAsync(int id);
+        Task<IList<string>> GetUserRolesAsync(User user);
+        Task<bool> IsInRoleAsync(User user, string roleName);
+        Task<int> CountUsersInRoleAsync(string roleName);
+        Task<IdentityResult> SetLockoutAsync(User user, bool block);
+        Task<IdentityResult> UpdateUserRolesAsync(User user, IEnumerable<string> currentRoles, string newRole);
+        Task<int> CountActiveUsersInRoleAsync(string roleName);
     }
 }
