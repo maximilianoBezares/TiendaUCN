@@ -60,11 +60,11 @@ namespace TiendaUCN.src.Infrastructure.Data
                 {
                     var categories = new List<Category>
                     {
-                        new Category { Name = "Electronics" },
-                        new Category { Name = "Clothing" },
-                        new Category { Name = "Home Appliances" },
-                        new Category { Name = "Books" },
-                        new Category { Name = "Sports" },
+                        new Category { Name = "Electronics", Slug = GenerateSlugStatic("Electronics") },
+                        new Category { Name = "Clothing", Slug = GenerateSlugStatic("Clothing") },
+                        new Category { Name = "Home Appliances", Slug = GenerateSlugStatic("Home Appliances") },
+                        new Category { Name = "Books", Slug = GenerateSlugStatic("Books") },
+                        new Category { Name = "Sports", Slug = GenerateSlugStatic("Sports") },
                     };
                     await context.Categories.AddRangeAsync(categories);
                     await context.SaveChangesAsync();
@@ -290,6 +290,26 @@ namespace TiendaUCN.src.Infrastructure.Data
             string firstPartNumber = faker.Random.Int(1000, 9999).ToString();
             string secondPartNumber = faker.Random.Int(1000, 9999).ToString();
             return $"+569 {firstPartNumber}{secondPartNumber}";
+        }
+
+        /// <summary>
+        /// Método estático para generar un slug a partir del nombre (copia del servicio).
+        /// </summary>
+        private static string GenerateSlugStatic(string name)
+        {
+            string slug = name.ToLowerInvariant();
+            slug = slug
+                        .Replace("á", "a")
+                        .Replace("é", "e")
+                        .Replace("í", "i")
+                        .Replace("ó", "o")
+                        .Replace("ú", "u")
+                        .Replace("ñ", "n");
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9\s-]", "");
+            slug = slug.Replace(" ", "-");
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"-+", "-");
+            slug = slug.Trim('-');
+            return slug;
         }
     }
 }

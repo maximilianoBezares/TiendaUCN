@@ -52,10 +52,15 @@ namespace TiendaUCN.src.Application.Services.Implements
             {
                 throw new ArgumentOutOfRangeException("El número de página está fuera de rango.");
             }
+            var categoriesDto = categories1.Adapt<List<CategoryDTO>>();
+            foreach (var dto in categoriesDto)
+            {
+                dto.productCount = await _categoriesRepository.GetProductCountByIdAsync(dto.id);
+            }
             Log.Information("Total de categorías encontradas: {TotalCount}, Total de páginas: {TotalPages}, Página actual: {CurrentPage}, Tamaño de página: {PageSize}", totalCount, totalPages, currentPage, pageSize);
             return new ListedCategoriesDTO
             {
-                categories = categories1.Adapt<List<CategoryDTO>>(),
+                categories = categoriesDto,
                 totalCount = totalCount,
                 totalPages = totalPages,
                 currentPage = currentPage,
@@ -89,9 +94,35 @@ namespace TiendaUCN.src.Application.Services.Implements
             {
                 throw new InvalidOperationException($"Ya existe una categoría con el nombre '{category.Name}'.");
             }
+            string slug = GenerateSlug(category.Name);
+            if (await _categoriesRepository.ExistsSlug(slug))
+            {
+                throw new InvalidOperationException($"El nombre de categoría genera un slug: {slug} que ya esta en uso, porfavor cambiar nombre");
+            }
+            category.Slug = slug;
             int categoryId = await _categoriesRepository.CreateAsync(category);
             Log.Information("Categoría creada: {@Category}", category);
             return categoryId.ToString();
+        }
+
+        /// <summary>
+        /// Genera un slug a partir del nombre
+        /// </summary>
+        private string GenerateSlug(string name)
+        {
+            string slug = name.ToLowerInvariant();
+            slug = slug
+                    .Replace("á", "a")
+                    .Replace("é", "e")
+                    .Replace("í", "i")
+                    .Replace("ó", "o")
+                    .Replace("ú", "u")
+                    .Replace("ñ", "n");
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9\s-]", "");
+            slug = slug.Replace(" ", "-");
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"-+", "-");
+            slug = slug.Trim('-');
+            return slug;
         }
     }
 }

@@ -18,13 +18,13 @@ namespace TiendaUCN.src.Domain.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Slug de la categoria.
-        /// </summary>
-        public string Slug { get; set; } = string.Empty;
-
-        /// <summary>
         /// Descripcion de la categoria.
         /// </summary>
         public string? Description { get; set; }
+
+        /// <summary>
+        /// Slug de la categoria.
+        /// </summary>
+        public string Slug { get; set; }
     }
 }

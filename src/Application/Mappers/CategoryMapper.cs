@@ -35,15 +35,15 @@ namespace TiendaUCN.src.Application.Mappers
             TypeAdapterConfig<Category, CategoryDTO>.NewConfig()
                 .Map(dest => dest.id, src => src.Id)
                 .Map(dest => dest.name, src => src.Name)
-                .Map(dest => dest.slug, src => src.Slug)
-                .Map(dest => dest.description, src => src.Description);
+                .Map(dest => dest.description, src => src.Description)
+                .Map(dest => dest.slug, src => src.Slug);
 
             TypeAdapterConfig<Category, CategoryDetailDTO>.NewConfig()
                 .Map(dest => dest.id, src => src.Id)
                 .Map(dest => dest.name, src => src.Name)
-                .Map(dest => dest.slug, src => src.Slug)
                 .Map(dest => dest.description, src => src.Description)
-                .Map(dest => dest.createdAt, src => src.CreatedAt);
+                .Map(dest => dest.createdAt, src => src.CreatedAt)
+                .Map(dest => dest.slug, src => src.Slug);
 
             TypeAdapterConfig<CategoryCreateDTO, Category>.NewConfig()
                 .Map(dest => dest.Name, src => src.name)

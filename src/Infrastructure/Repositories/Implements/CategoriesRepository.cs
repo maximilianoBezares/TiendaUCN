@@ -92,5 +92,13 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
             await _context.SaveChangesAsync();
             return category.Id;
         }
+
+        /// <summary>
+        /// Compara si existe un mismo slug en la base de datos con el pasado en parametro, si devuelve true, entonces los dos slugs son iguales, si devuelve false, no son iguales
+        /// </summary>
+        public async Task<bool> ExistsSlug(string slug)
+        {
+            return await _context.Categories.AsNoTracking().Where(c => c.Slug.ToLower() == slug.ToLower()).AnyAsync();
+        }
     }
 }

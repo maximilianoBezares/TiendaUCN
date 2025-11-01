@@ -15,5 +15,6 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
         Task<int> GetProductCountByIdAsync(int id);
         Task<Category?> GetByNameAsync(string name);
         Task<int> CreateAsync(Category category);
+        Task<bool> ExistsSlug(string slug);
     }
 }
