@@ -1,11 +1,13 @@
+using System.Linq.Expressions;
 using System.Xml.Schema;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using TiendaUCN.src.Application.DTO.UserCrudAdminDTOs;
+using TiendaUCN.src.Application.DTO.UserProfileDTO;
 using TiendaUCN.src.Domain.Models;
 using TiendaUCN.src.Infrastructure.Data;
 using TiendaUCN.src.Infrastructure.Repositories.Interfaces;
-using TiendaUCN.src.Application.DTO.UserProfileDTO;
 
 namespace TiendaUCN.src.Infrastructure.Repositories.Implements
 {
@@ -17,11 +19,20 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         private readonly DataContext _context;
         private readonly UserManager<User> _userManager;
         private readonly int _daysOfDeleteUnconfirmedUsers;
-        public UserRepository(DataContext context, UserManager<User> userManager, IConfiguration configuration)
+
+        public UserRepository(
+            DataContext context,
+            UserManager<User> userManager,
+            IConfiguration configuration
+        )
         {
             _context = context;
             _userManager = userManager;
-            _daysOfDeleteUnconfirmedUsers = configuration.GetValue<int?>("Jobs:DaysOfDeleteUnconfirmedUsers") ?? throw new InvalidOperationException("La configuración 'Jobs:DaysOfDeleteUnconfirmedUsers' no está definida.");
+            _daysOfDeleteUnconfirmedUsers =
+                configuration.GetValue<int?>("Jobs:DaysOfDeleteUnconfirmedUsers")
+                ?? throw new InvalidOperationException(
+                    "La configuración 'Jobs:DaysOfDeleteUnconfirmedUsers' no está definida."
+                );
         }
 
         /// <summary>
@@ -42,7 +53,9 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         /// <returns>True si la confirmación fue exitosa, false en caso contrario</returns>
         public async Task<bool> ConfirmEmailAsync(string email)
         {
-            var result = await _context.Users.Where(u => u.Email == email).ExecuteUpdateAsync(u => u.SetProperty(x => x.EmailConfirmed, true));
+            var result = await _context
+                .Users.Where(u => u.Email == email)
+                .ExecuteUpdateAsync(u => u.SetProperty(x => x.EmailConfirmed, true));
             return result > 0;
         }
 
@@ -85,8 +98,8 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
 
             var cutoffDate = DateTime.UtcNow.AddDays(_daysOfDeleteUnconfirmedUsers);
 
-            var unconfirmedUsers = await _context.Users
-                .Where(u => !u.EmailConfirmed && u.RegisteredAt < cutoffDate)
+            var unconfirmedUsers = await _context
+                .Users.Where(u => !u.EmailConfirmed && u.RegisteredAt < cutoffDate)
                 .Include(u => u.VerificationCodes)
                 .ToListAsync();
 
@@ -182,7 +195,9 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
             var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
             if (!result.Succeeded)
             {
-                Log.Error($"Error al actualizar la contraseña del usuario con ID: {user.Id}. Errores: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                Log.Error(
+                    $"Error al actualizar la contraseña del usuario con ID: {user.Id}. Errores: {string.Join(", ", result.Errors.Select(e => e.Description))}"
+                );
             }
             await _userManager.UpdateSecurityStampAsync(user);
             return result.Succeeded;
@@ -194,22 +209,37 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         /// <param name="userId">ID del usuario.</param>
         /// <param name="updateProfileDTO">DTO que contiene los datos actualizados del perfil del usuario.</param>
         /// <returns>True si la actualización fue exitosa, false en caso contrario</returns
-        public async Task<bool> UpdateUserProfileAsync(int userId, UpdateProfileDTO updateProfileDTO)
+        public async Task<bool> UpdateUserProfileAsync(
+            int userId,
+            UpdateProfileDTO updateProfileDTO
+        )
         {
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
             {
                 return false;
             }
-            if (!string.Equals(user.Email, updateProfileDTO.Email, StringComparison.OrdinalIgnoreCase))
+            if (
+                !string.Equals(
+                    user.Email,
+                    updateProfileDTO.Email,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
             {
-                bool emailExists = await _context.Users.AnyAsync(u => u.Email == updateProfileDTO.Email && u.Id != userId);
+                bool emailExists = await _context.Users.AnyAsync(u =>
+                    u.Email == updateProfileDTO.Email && u.Id != userId
+                );
                 if (emailExists)
-                    throw new ArgumentException("El correo electrónico ya está registrado por otro usuario.");
+                    throw new ArgumentException(
+                        "El correo electrónico ya está registrado por otro usuario."
+                    );
             }
             if (!string.Equals(user.Rut, updateProfileDTO.Rut, StringComparison.OrdinalIgnoreCase))
             {
-                bool rutExists = await _context.Users.AnyAsync(u => u.Rut == updateProfileDTO.Rut && u.Id != userId);
+                bool rutExists = await _context.Users.AnyAsync(u =>
+                    u.Rut == updateProfileDTO.Rut && u.Id != userId
+                );
                 if (rutExists)
                     throw new ArgumentException("El RUT ya está registrado por otro usuario.");
             }
@@ -234,5 +264,153 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
             await _context.SaveChangesAsync();
             return true;
         }
-    }    
+
+        public async Task<PagedResult<User>> GetPagedUsersAsync(
+            AdminUserQueryParameters queryParams
+        )
+        {
+            var query = _context.Users.AsQueryable();
+
+            if (!string.IsNullOrEmpty(queryParams.Email))
+                query = query.Where(u => u.Email.Contains(queryParams.Email));
+
+            if (!string.IsNullOrEmpty(queryParams.Status))
+            {
+                if (queryParams.Status == "blocked")
+                    query = query.Where(u =>
+                        u.LockoutEnd != null && u.LockoutEnd > DateTimeOffset.UtcNow
+                    );
+                else if (queryParams.Status == "active")
+                    query = query.Where(u =>
+                        (u.LockoutEnd == null || u.LockoutEnd <= DateTimeOffset.UtcNow)
+                        && u.EmailConfirmed
+                    );
+                else if (queryParams.Status == "unconfirmed")
+                    query = query.Where(u => !u.EmailConfirmed);
+            }
+
+            if (queryParams.CreatedFrom.HasValue)
+                query = query.Where(u => u.RegisteredAt >= queryParams.CreatedFrom.Value);
+
+            if (queryParams.CreatedTo.HasValue)
+                query = query.Where(u => u.RegisteredAt <= queryParams.CreatedTo.Value);
+
+            if (!string.IsNullOrEmpty(queryParams.Role))
+            {
+                var role = await _context.Roles.FirstOrDefaultAsync(r =>
+                    r.Name == queryParams.Role
+                );
+                if (role != null)
+                {
+                    query =
+                        from user in query
+                        join userRole in _context.UserRoles on user.Id equals userRole.UserId
+                        where userRole.RoleId == role.Id
+                        select user;
+                }
+            }
+
+            var parameter = Expression.Parameter(typeof(User), "x");
+            var property = Expression.Property(parameter, queryParams.SortBy ?? "RegisteredAt");
+            var lambda = Expression.Lambda(property, parameter);
+
+            string methodName =
+                (queryParams.SortDirection?.ToLower() == "asc") ? "OrderBy" : "OrderByDescending";
+
+            query =
+                (IQueryable<User>)
+                    typeof(Queryable)
+                        .GetMethods()
+                        .Single(m => m.Name == methodName && m.GetParameters().Length == 2)
+                        .MakeGenericMethod(typeof(User), property.Type)
+                        .Invoke(null, new object[] { query, lambda });
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .Skip((queryParams.PageNumber - 1) * queryParams.PageSize)
+                .Take(queryParams.PageSize)
+                .ToListAsync();
+
+            return new PagedResult<User>
+            {
+                Items = items,
+                TotalCount = totalCount,
+
+                Page = queryParams.PageNumber,
+                PageSize = queryParams.PageSize,
+            };
+        }
+
+        public async Task<User?> GetByIdWithRolesAsync(int id)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+        }
+
+        public async Task<IList<string>> GetUserRolesAsync(User user)
+        {
+            return await _userManager.GetRolesAsync(user);
+        }
+
+        public async Task<bool> IsInRoleAsync(User user, string roleName)
+        {
+            return await _userManager.IsInRoleAsync(user, roleName);
+        }
+
+        public async Task<int> CountUsersInRoleAsync(string roleName)
+        {
+            var usersInRole = await _userManager.GetUsersInRoleAsync(roleName);
+            return usersInRole.Count;
+        }
+
+        public async Task<IdentityResult> SetLockoutAsync(User user, bool block)
+        {
+            IdentityResult result;
+            if (block)
+            {
+                result = await _userManager.SetLockoutEndDateAsync(
+                    user,
+                    DateTimeOffset.UtcNow.AddYears(100)
+                );
+            }
+            else
+            {
+                result = await _userManager.SetLockoutEndDateAsync(user, null); // Desbloquear
+            }
+
+            if (result.Succeeded)
+            {
+                result = await _userManager.UpdateSecurityStampAsync(user);
+            }
+            return result;
+        }
+
+        public async Task<IdentityResult> UpdateUserRolesAsync(
+            User user,
+            IEnumerable<string> currentRoles,
+            string newRole
+        )
+        {
+            var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+            if (!removeResult.Succeeded)
+                return removeResult;
+
+            var addResult = await _userManager.AddToRoleAsync(user, newRole);
+            if (!addResult.Succeeded)
+                return addResult;
+
+            return await _userManager.UpdateSecurityStampAsync(user);
+        }
+
+        public async Task<int> CountActiveUsersInRoleAsync(string roleName)
+        {
+            var usersInRole = await _userManager.GetUsersInRoleAsync(roleName);
+
+            // Filtra solo los usuarios que NO están bloqueados
+            var activeUsersInRole = usersInRole
+                .Where(u => u.LockoutEnd == null || u.LockoutEnd <= DateTimeOffset.UtcNow)
+                .ToList();
+
+            return activeUsersInRole.Count;
+        }
+    }
 }

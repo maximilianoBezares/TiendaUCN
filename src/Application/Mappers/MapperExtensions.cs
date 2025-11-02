@@ -24,6 +24,12 @@ namespace TiendaUCN.src.Application.Mappers
 
             var brandMapper = serviceProvider.GetService<BrandMapper>();
             brandMapper?.ConfigureAllMappings();
+            
+            var cartMapper = serviceProvider.GetService<CartMapper>();
+            cartMapper?.ConfigureAllMappings();
+
+            var orderMapper = serviceProvider.GetService<OrderMapper>();
+            orderMapper?.ConfigureAllMappings();;
 
             // Configuración global de Mapster para ignorar valores nulos
             TypeAdapterConfig.GlobalSettings.Default.IgnoreNullValues(true);

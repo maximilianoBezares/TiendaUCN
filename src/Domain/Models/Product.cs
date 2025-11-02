@@ -48,6 +48,8 @@ namespace TiendaUCN.src.Domain.Models
         /// </summary>
         public bool IsAvailable { get; set; } = true;
 
+        public bool DeletedAt { get; set; } = false;
+
         /// <summary>
         /// Identificador de la categoría del producto.
         /// </summary>

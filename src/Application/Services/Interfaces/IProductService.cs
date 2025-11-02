@@ -34,7 +34,7 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// </summary>
         /// <param name="id">El ID del producto a buscar.</param>
         /// <returns>Una tarea que representa la operación asíncrona, con el producto encontrado o null si no se encuentra.</returns>
-        Task<ProductDetailDTO> GetByIdForAdminAsync(int id);
+        Task<ProductDetailAdminDTO> GetByIdForAdminAsync(int id);
 
         /// <summary>
         /// Crea un nuevo producto en el sistema.
@@ -44,10 +44,36 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         Task<string> CreateAsync(CreateProductDTO createProductDTO);
 
         /// <summary>
+        /// Añade una nueva imagen a un producto existente
+        /// </summary>
+        /// <param name="id"></param>id del producto para identificar el producto a añadir
+        /// <param name="images"></param>lista de imagen de producto para incluir la nueva imagen
+        /// <returns></returns>
+        Task AddImagesAsync(int id, List<IFormFile> images);
+
+        /// <summary>
         /// Cambia el estado activo de un producto por su ID.
         /// </summary>
         /// <param name="id">El ID del producto cuyo estado se cambiará.</param>
         Task ToggleActiveAsync(int id);
+
+        /// <summary>
+        /// Elimina de un producto por su ID.
+        /// </summary>
+        /// <param name="id">El ID del producto que se elimnara.</param>
+        Task SoftDeleteAsync(int id);
+        /// <summary>
+        /// Elimina una imagen de un producto por su IdImagen.
+        /// </summary>
+        /// <param name="id">El ID de la imagen del producto que se elimnara.</param>
+        Task DeleteImageAsync(int imageId);
+        /// <summary>
+        /// Cambia el descuento de un producto
+        /// </summary>
+        /// <param name="id"></param> Id del producto a cambiar
+        /// <param name="discount"></param> descuento entre 0 a 100(%)
+        /// <returns></returns>
+        Task UpdateDiscountAsync(int id, int discount);
     }
 
 }

@@ -1,11 +1,11 @@
 using Mapster;
 using Serilog;
-using TiendaUCN.src.Domain.Models;
 using TiendaUCN.src.Application.DTO.ProductDTO;
+using TiendaUCN.src.Application.DTO.ProductDTO.AdminDTO;
 using TiendaUCN.src.Application.DTO.ProductDTO.CustomerDTO;
 using TiendaUCN.src.Application.Services.Interfaces;
+using TiendaUCN.src.Domain.Models;
 using TiendaUCN.src.Infrastructure.Repositories.Interfaces;
-using TiendaUCN.src.Application.DTO.ProductDTO.AdminDTO;
 
 namespace TiendaUCN.src.Application.Services.Implements
 {
@@ -17,12 +17,21 @@ namespace TiendaUCN.src.Application.Services.Implements
 
         private readonly int _defaultPageSize;
 
-        public ProductService(IProductRepository productRepository, IConfiguration configuration, IFileService fileService)
+        public ProductService(
+            IProductRepository productRepository,
+            IConfiguration configuration,
+            IFileService fileService
+        )
         {
             _productRepository = productRepository;
             _configuration = configuration;
             _fileService = fileService;
-            _defaultPageSize = int.Parse(_configuration["Products:DefaultPageSize"] ?? throw new InvalidOperationException("La configuración 'DefaultPageSize' no está definida."));
+            _defaultPageSize = int.Parse(
+                _configuration["Products:DefaultPageSize"]
+                    ?? throw new InvalidOperationException(
+                        "La configuración 'DefaultPageSize' no está definida."
+                    )
+            );
         }
 
         /// <summary>
@@ -33,18 +42,28 @@ namespace TiendaUCN.src.Application.Services.Implements
         public async Task<string> CreateAsync(CreateProductDTO createProductDTO)
         {
             Product product = createProductDTO.Adapt<Product>();
-            Category category = await _productRepository.CreateOrGetCategoryAsync(createProductDTO.CategoryName) ?? throw new Exception("Error al crear o obtener la categoría del producto.");
-            Brand brand = await _productRepository.CreateOrGetBrandAsync(createProductDTO.BrandName) ?? throw new Exception("Error al crear o obtener la marca del producto.");
+            Category category =
+                await _productRepository.CreateOrGetCategoryAsync(createProductDTO.CategoryName)
+                ?? throw new Exception("Error al crear o obtener la categoría del producto.");
+            Brand brand =
+                await _productRepository.CreateOrGetBrandAsync(createProductDTO.BrandName)
+                ?? throw new Exception("Error al crear o obtener la marca del producto.");
             product.CategoryId = category.Id;
             product.BrandId = brand.Id;
             product.Images = new List<Image>();
-            int productId = await _productRepository.CreateAsync(product);
-            Log.Information("Producto creado: {@Product}", product);
             if (createProductDTO.Images == null || !createProductDTO.Images.Any())
             {
-                Log.Information("No se proporcionaron imágenes. Se asignará la imagen por defecto.");
-                throw new InvalidOperationException("Debe proporcionar al menos una imagen para el producto.");
+                Log.Information(
+                    "No se proporcionaron imágenes. Se asignará la imagen por defecto."
+                );
+                throw new InvalidOperationException(
+                    "Debe proporcionar al menos una imagen para el producto."
+                );
             }
+
+            int productId = await _productRepository.CreateAsync(product);
+            Log.Information("Producto creado: {@Product}", product);
+
             foreach (var image in createProductDTO.Images)
             {
                 Log.Information("Imagen asociada al producto: {@Image}", image);
@@ -60,7 +79,9 @@ namespace TiendaUCN.src.Application.Services.Implements
         /// <returns>Una tarea que representa la operación asíncrona, con el producto encontrado o null si no se encuentra.</returns>
         public async Task<ProductDetailDTO> GetByIdAsync(int id)
         {
-            var product = await _productRepository.GetByIdAsync(id) ?? throw new KeyNotFoundException($"Producto con ID {id} no encontrado.");
+            var product =
+                await _productRepository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"Producto con ID {id} no encontrado.");
             Log.Information("Producto encontrado: {@Product}", product);
             return product.Adapt<ProductDetailDTO>();
         }
@@ -70,11 +91,13 @@ namespace TiendaUCN.src.Application.Services.Implements
         /// </summary>
         /// <param name="id">El ID del producto a buscar.</param>
         /// <returns>Una tarea que representa la operación asíncrona, con el producto encontrado o null si no se encuentra.</returns>
-        public async Task<ProductDetailDTO> GetByIdForAdminAsync(int id)
+        public async Task<ProductDetailAdminDTO> GetByIdForAdminAsync(int id)
         {
-            var product = await _productRepository.GetByIdForAdminAsync(id) ?? throw new KeyNotFoundException($"Producto con ID {id} no encontrado.");
+            var product =
+                await _productRepository.GetByIdForAdminAsync(id)
+                ?? throw new KeyNotFoundException($"Producto con ID {id} no encontrado.");
             Log.Information("Producto encontrado: {@Product}", product);
-            return product.Adapt<ProductDetailDTO>();
+            return product.Adapt<ProductDetailAdminDTO>();
         }
 
         /// <summary>
@@ -82,18 +105,32 @@ namespace TiendaUCN.src.Application.Services.Implements
         /// </summary>
         /// <param name="searchParams">Parámetros de búsqueda para filtrar los productos.</param>
         /// <returns>Una lista de productos filtrados para el administrador.</returns>
-        public async Task<ListedProductsForAdminDTO> GetFilteredForAdminAsync(SearchParamsDTO searchParams)
+        public async Task<ListedProductsForAdminDTO> GetFilteredForAdminAsync(
+            SearchParamsDTO searchParams
+        )
         {
-            Log.Information("Obteniendo productos para administrador con parámetros de búsqueda: {@SearchParams}", searchParams);
-            var (products, totalCount) = await _productRepository.GetFilteredForAdminAsync(searchParams);
-            var totalPages = (int)Math.Ceiling((double)totalCount / (searchParams.PageSize ?? _defaultPageSize));
+            Log.Information(
+                "Obteniendo productos para administrador con parámetros de búsqueda: {@SearchParams}",
+                searchParams
+            );
+            var (products, totalCount) = await _productRepository.GetFilteredForAdminAsync(
+                searchParams
+            );
+            var totalPages = (int)
+                Math.Ceiling((double)totalCount / (searchParams.PageSize ?? _defaultPageSize));
             int currentPage = searchParams.PageNumber;
             int pageSize = searchParams.PageSize ?? _defaultPageSize;
             if (currentPage < 1 || currentPage > totalPages)
             {
                 throw new ArgumentOutOfRangeException("El número de página está fuera de rango.");
             }
-            Log.Information("Total de productos encontrados: {TotalCount}, Total de páginas: {TotalPages}, Página actual: {CurrentPage}, Tamaño de página: {PageSize}", totalCount, totalPages, currentPage, pageSize);
+            Log.Information(
+                "Total de productos encontrados: {TotalCount}, Total de páginas: {TotalPages}, Página actual: {CurrentPage}, Tamaño de página: {PageSize}",
+                totalCount,
+                totalPages,
+                currentPage,
+                pageSize
+            );
 
             // Convertimos los productos filtrados a DTOs para la respuesta
             return new ListedProductsForAdminDTO
@@ -102,9 +139,8 @@ namespace TiendaUCN.src.Application.Services.Implements
                 TotalCount = totalCount,
                 TotalPages = totalPages,
                 CurrentPage = currentPage,
-                PageSize = products.Count()
+                PageSize = products.Count(),
             };
-
         }
 
         /// <summary>
@@ -112,17 +148,28 @@ namespace TiendaUCN.src.Application.Services.Implements
         /// </summary>
         /// <param name="searchParams">Parámetros de búsqueda para filtrar los productos.</param>
         /// <returns>Una lista de productos filtrados para el cliente.</returns>
-        public async Task<ListedProductsForCustomerDTO> GetFilteredForCustomerAsync(SearchParamsDTO searchParams)
+        public async Task<ListedProductsForCustomerDTO> GetFilteredForCustomerAsync(
+            SearchParamsDTO searchParams
+        )
         {
-            var (products, totalCount) = await _productRepository.GetFilteredForCustomerAsync(searchParams);
-            var totalPages = (int)Math.Ceiling((double)totalCount / (searchParams.PageSize ?? _defaultPageSize));
+            var (products, totalCount) = await _productRepository.GetFilteredForCustomerAsync(
+                searchParams
+            );
+            var totalPages = (int)
+                Math.Ceiling((double)totalCount / (searchParams.PageSize ?? _defaultPageSize));
             int currentPage = searchParams.PageNumber;
             int pageSize = searchParams.PageSize ?? _defaultPageSize;
             if (currentPage < 1 || currentPage > totalPages)
             {
                 throw new ArgumentOutOfRangeException("El número de página está fuera de rango.");
             }
-            Log.Information("Total de productos encontrados: {TotalCount}, Total de páginas: {TotalPages}, Página actual: {CurrentPage}, Tamaño de página: {PageSize}", totalCount, totalPages, currentPage, pageSize);
+            Log.Information(
+                "Total de productos encontrados: {TotalCount}, Total de páginas: {TotalPages}, Página actual: {CurrentPage}, Tamaño de página: {PageSize}",
+                totalCount,
+                totalPages,
+                currentPage,
+                pageSize
+            );
 
             // Convertimos los productos filtrados a DTOs para la respuesta
             return new ListedProductsForCustomerDTO
@@ -131,7 +178,7 @@ namespace TiendaUCN.src.Application.Services.Implements
                 TotalCount = totalCount,
                 TotalPages = totalPages,
                 CurrentPage = currentPage,
-                PageSize = products.Count()
+                PageSize = products.Count(),
             };
         }
 
@@ -144,5 +191,73 @@ namespace TiendaUCN.src.Application.Services.Implements
             await _productRepository.ToggleActiveAsync(id);
         }
 
+        /// <summary>
+        /// Marca un producto como eliminado (soft delete) por su ID.
+        /// </summary>
+        /// <param name="id">El ID del producto a eliminar.</param>
+        public async Task SoftDeleteAsync(int id)
+        {
+            // El repositorio ya maneja la lógica de encontrar y actualizar.
+            // Podríamos añadir una verificación de existencia si quisiéramos.
+            var product = await _productRepository.GetByIdForAdminAsync(id);
+            if (product == null)
+            {
+                throw new KeyNotFoundException($"Producto con ID {id} no encontrado.");
+            }
+
+            await _productRepository.SoftDeleteAsync(id);
+        }
+
+        public async Task AddImagesAsync(int id, List<IFormFile> images)
+        {
+            // 1. Verificar que el producto existe
+            var product = await _productRepository.GetByIdForAdminAsync(id);
+            if (product == null)
+            {
+                // Esto será capturado por tu ExceptionHandlingMiddleware
+                throw new KeyNotFoundException($"Producto con ID {id} no encontrado.");
+            }
+
+            // 2. Subir las imágenes
+            if (images == null || !images.Any())
+            {
+                // Esto será capturado por tu ExceptionHandlingMiddleware
+                throw new ArgumentException("No se proporcionaron imágenes.");
+            }
+
+            foreach (var image in images)
+            {
+                Log.Information(
+                    "Asociando nueva imagen al producto {ProductId}: {@Image}",
+                    id,
+                    image.FileName
+                );
+                // Tu FileService ya sabe cómo subir y asociar al producto
+                await _fileService.UploadAsync(image, id);
+            }
+        }
+
+        public async Task DeleteImageAsync(int imageId)
+        {
+            Log.Information("Solicitud para eliminar imagen {ImageId}", imageId);
+            await _fileService.DeleteImageAsync(imageId);
+        }
+
+        /// <summary>
+        /// Actualiza el descuento de un producto.
+        /// </summary>
+        /// <param name="id">ID del producto.</param>
+        /// <param name="discount">Nuevo descuento (0-100).</param>
+        public async Task UpdateDiscountAsync(int id, int discount)
+        {
+            // La validación de rango (0-100) la hace el DTO automáticamente.
+            var product = await _productRepository.GetByIdForAdminAsync(id);
+            if (product == null)
+            {
+                throw new KeyNotFoundException($"Producto con ID {id} no encontrado.");
+            }
+
+            await _productRepository.UpdateDiscountAsync(id, discount);
+        }
     }
 }

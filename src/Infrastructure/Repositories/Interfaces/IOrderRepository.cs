@@ -1,5 +1,6 @@
-using TiendaUCN.src.Domain.Models;
+using TiendaUCN.src.Application.DTO.OrderDTO.AdminDTO;
 using TiendaUCN.src.Application.DTO.ProductDTO;
+using TiendaUCN.src.Domain.Models;
 
 namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
 {
@@ -32,6 +33,13 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
         /// <param name="userId">El ID del usuario.</param>
         /// <param name="searchParams">Los parámetros de búsqueda.</param>
         /// <returns>Una tarea que representa la operación asíncrona, con una lista de órdenes y el conteo total de órdenes.</returns>
-        Task<(IEnumerable<Order> orders, int totalCount)> GetByUserIdAsync(SearchParamsDTO searchParams, int userId);
+        Task<(IEnumerable<Order> orders, int totalCount)> GetByUserIdAsync(
+            SearchParamsDTO searchParams,
+            int userId
+        );
+
+        Task<(IEnumerable<Order> orders, int totalCount)> GetFilteredForAdminAsync(AdminOrderSearchParamsDTO searchParams);
+        Task<Order?> GetByIdForAdminAsync(int orderId);
+        Task UpdateStatusAsync(int orderId, OrderStatus newStatus, string adminId);
     }
 }

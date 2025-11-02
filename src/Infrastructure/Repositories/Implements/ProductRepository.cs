@@ -1,8 +1,8 @@
 using System.IO.Compression;
 using Microsoft.EntityFrameworkCore;
+using TiendaUCN.src.Application.DTO.ProductDTO;
 using TiendaUCN.src.Domain.Models;
 using TiendaUCN.src.Infrastructure.Data;
-using TiendaUCN.src.Application.DTO.ProductDTO;
 using TiendaUCN.src.Infrastructure.Repositories.Interfaces;
 
 namespace TiendaUCN.src.Infrastructure.Repositories.Implements
@@ -21,7 +21,11 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         {
             _context = context;
             _configuration = configuration;
-            _defaultPageSize = _configuration.GetValue<int?>("Products:DefaultPageSize") ?? throw new ArgumentNullException("El tamaño de página por defecto no puede ser nulo.");
+            _defaultPageSize =
+                _configuration.GetValue<int?>("Products:DefaultPageSize")
+                ?? throw new ArgumentNullException(
+                    "El tamaño de página por defecto no puede ser nulo."
+                );
         }
 
         /// <summary>
@@ -43,11 +47,14 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         /// <returns>Una tarea que representa la operación asíncrona, con la marca creada o encontrada.</returns>
         public async Task<Brand> CreateOrGetBrandAsync(string brandName)
         {
-            var brand = await _context.Brands
-                .AsNoTracking()
+            var brand = await _context
+                .Brands.AsNoTracking()
                 .FirstOrDefaultAsync(b => b.Name.ToLower() == brandName.ToLower());
 
-            if (brand != null) { return brand; }
+            if (brand != null)
+            {
+                return brand;
+            }
             brand = new Brand { Name = brandName };
             await _context.Brands.AddAsync(brand);
             await _context.SaveChangesAsync();
@@ -61,11 +68,14 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         /// <returns>Una tarea que representa la operación asíncrona, con la categoría creada o encontrada.</returns>
         public async Task<Category> CreateOrGetCategoryAsync(string categoryName)
         {
-            var category = await _context.Categories
-                .AsNoTracking()
+            var category = await _context
+                .Categories.AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Name.ToLower() == categoryName.ToLower());
 
-            if (category != null) { return category; }
+            if (category != null)
+            {
+                return category;
+            }
             category = new Category { Name = categoryName };
             await _context.Categories.AddAsync(category);
             await _context.SaveChangesAsync();
@@ -79,13 +89,13 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         /// <returns>Una tarea que representa la operación asíncrona, con el producto encontrado o null si no se encuentra.</returns>
         public async Task<Product?> GetByIdAsync(int id)
         {
-            return await _context.Products.
-                                        AsNoTracking().
-                                        Where(p => p.Id == id && p.IsAvailable).
-                                        Include(p => p.Category).
-                                        Include(p => p.Brand).
-                                        Include(p => p.Images)
-                                        .FirstOrDefaultAsync();
+            return await _context
+                .Products.AsNoTracking()
+                .Where(p => p.Id == id && p.IsAvailable && !p.DeletedAt)
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync();
         }
 
         /// <summary>
@@ -95,46 +105,77 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         /// <returns>Una tarea que representa la operación asíncrona, con el producto encontrado o null si no se encuentra.</returns>
         public async Task<Product?> GetByIdForAdminAsync(int id)
         {
-            return await _context.Products.
-                                        AsNoTracking().
-                                        Where(p => p.Id == id).
-                                        Include(p => p.Category).
-                                        Include(p => p.Brand).
-                                        Include(p => p.Images)
-                                        .FirstOrDefaultAsync();
+            return await _context
+                .Products.AsNoTracking()
+                .Where(p => p.Id == id)
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync();
         }
 
-        // <summary>
+        /// <summary>
         /// Retorna una lista de productos para el administrador con los parámetros de búsqueda especificados.
         /// </summary>
         /// <param name="searchParams">Parámetros de búsqueda para filtrar los productos.</param>
         /// <returns>Una tarea que representa la operación asíncrona, con una lista de productos para el administrador y el conteo total de productos.</returns>
-        public async Task<(IEnumerable<Product> products, int totalCount)> GetFilteredForAdminAsync(SearchParamsDTO searchParams)
+        public async Task<(IEnumerable<Product> products, int totalCount)> GetFilteredForAdminAsync(
+            SearchParamsDTO searchParams
+        )
         {
-            var query = _context.Products
-                .Include(p => p.Category)
+            var query = _context
+                .Products.Include(p => p.Category)
                 .Include(p => p.Brand)
                 .Include(p => p.Images.OrderBy(i => i.CreatedAt).Take(1)) // Cargamos la URL de la imagen principal a la hora de crear el producto
                 .AsNoTracking();
-
 
             if (!string.IsNullOrWhiteSpace(searchParams.SearchTerm))
             {
                 var searchTerm = searchParams.SearchTerm.Trim().ToLower();
 
                 query = query.Where(p =>
-                    p.Title.ToLower().Contains(searchTerm) ||
-                    p.Description.ToLower().Contains(searchTerm) ||
-                    p.Category.Name.ToLower().Contains(searchTerm) ||
-                    p.Brand.Name.ToLower().Contains(searchTerm) ||
-                    p.Status.ToString().ToLower().Contains(searchTerm) ||
-                    p.Price.ToString().ToLower().Contains(searchTerm) ||
-                    p.Stock.ToString().ToLower().Contains(searchTerm)
+                    p.Title.ToLower().Contains(searchTerm)
+                    || p.Description.ToLower().Contains(searchTerm)
+                    || p.Category.Name.ToLower().Contains(searchTerm)
+                    || p.Brand.Name.ToLower().Contains(searchTerm)
+                    || p.Status.ToString().ToLower().Contains(searchTerm)
+                    || p.Price.ToString().ToLower().Contains(searchTerm)
+                    || p.Stock.ToString().ToLower().Contains(searchTerm)
                 );
             }
 
+            if (searchParams.MinPrice.HasValue)
+            {
+                query = query.Where(p => p.Price >= searchParams.MinPrice.Value);
+            }
+
+            if (searchParams.MaxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= searchParams.MaxPrice.Value);
+            }
+
+            if (searchParams.CategoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == searchParams.CategoryId.Value);
+            }
+
+            if (searchParams.BrandId.HasValue)
+            {
+                query = query.Where(p => p.BrandId == searchParams.BrandId.Value);
+            }
+
+            if (searchParams.IsDelete.HasValue)
+            {
+                query = query.Where(p => p.DeletedAt == searchParams.IsDelete.Value);
+            }
+
+            if (searchParams.IsActive.HasValue)
+            {
+                query = query.Where(p => p.IsAvailable == searchParams.IsActive.Value);
+            }
+
             var products = await query
-                .OrderByDescending(p => p.CreatedAt)
+                //.OrderByDescending(p => p.CreatedAt)
                 .Skip((searchParams.PageNumber - 1) * searchParams.PageSize ?? _defaultPageSize)
                 .Take(searchParams.PageSize ?? _defaultPageSize)
                 .ToArrayAsync();
@@ -147,33 +188,56 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         /// </summary>
         /// <param name="searchParams">Parámetros de búsqueda para filtrar los productos.</param>
         /// <returns>Una tarea que representa la operación asíncrona, con una lista de productos para el cliente y el conteo total de productos.</returns>
-        public async Task<(IEnumerable<Product> products, int totalCount)> GetFilteredForCustomerAsync(SearchParamsDTO searchParams)
+        public async Task<(
+            IEnumerable<Product> products,
+            int totalCount
+        )> GetFilteredForCustomerAsync(SearchParamsDTO searchParams)
         {
-            var query = _context.Products
-                .Where(p => p.IsAvailable)
+            var query = _context
+                .Products.Where(p => p.IsAvailable && !p.DeletedAt)
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
                 .Include(p => p.Images.OrderBy(i => i.CreatedAt).Take(1))
                 .AsNoTracking();
-
 
             if (!string.IsNullOrWhiteSpace(searchParams.SearchTerm))
             {
                 var searchTerm = searchParams.SearchTerm.Trim().ToLower();
 
                 query = query.Where(p =>
-                    p.Title.ToLower().Contains(searchTerm) ||
-                    p.Description.ToLower().Contains(searchTerm) ||
-                    p.Category.Name.ToLower().Contains(searchTerm) ||
-                    p.Brand.Name.ToLower().Contains(searchTerm) ||
-                    p.Status.ToString().ToLower().Contains(searchTerm) ||
-                    p.Price.ToString().ToLower().Contains(searchTerm) ||
-                    p.Stock.ToString().ToLower().Contains(searchTerm)
+                    p.Title.ToLower().Contains(searchTerm)
+                    || p.Description.ToLower().Contains(searchTerm)
+                    || p.Category.Name.ToLower().Contains(searchTerm)
+                    || p.Brand.Name.ToLower().Contains(searchTerm)
+                    || p.Status.ToString().ToLower().Contains(searchTerm)
+                    || p.Price.ToString().ToLower().Contains(searchTerm)
+                    || p.Stock.ToString().ToLower().Contains(searchTerm)
                 );
             }
+
+            if (searchParams.MinPrice.HasValue)
+            {
+                query = query.Where(p => p.Price >= searchParams.MinPrice.Value);
+            }
+
+            if (searchParams.MaxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= searchParams.MaxPrice.Value);
+            }
+
+            if (searchParams.CategoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == searchParams.CategoryId.Value);
+            }
+
+            if (searchParams.BrandId.HasValue)
+            {
+                query = query.Where(p => p.BrandId == searchParams.BrandId.Value);
+            }
+
             int totalCount = await query.CountAsync();
             var products = await query
-                .OrderByDescending(p => p.CreatedAt)
+                //.OrderByDescending(p => p.CreatedAt)
                 .Skip((searchParams.PageNumber - 1) * searchParams.PageSize ?? _defaultPageSize)
                 .Take(searchParams.PageSize ?? _defaultPageSize)
                 .ToArrayAsync();
@@ -188,7 +252,11 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         /// <returns>Una tarea que representa la operación asíncrona, con el stock real del producto.</returns>
         public async Task<int> GetRealStockAsync(int productId)
         {
-            return await _context.Products.AsNoTracking().Where(p => p.Id == productId).Select(p => p.Stock).FirstOrDefaultAsync();
+            return await _context
+                .Products.AsNoTracking()
+                .Where(p => p.Id == productId)
+                .Select(p => p.Stock)
+                .FirstOrDefaultAsync();
         }
 
         /// <summary>
@@ -197,7 +265,9 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         /// <param name="id">El ID del producto cuyo estado se cambiará.</param>
         public async Task ToggleActiveAsync(int id)
         {
-            await _context.Products.Where(p => p.Id == id).ExecuteUpdateAsync(p => p.SetProperty(p => p.IsAvailable, p => !p.IsAvailable));
+            await _context
+                .Products.Where(p => p.Id == id)
+                .ExecuteUpdateAsync(p => p.SetProperty(p => p.IsAvailable, p => !p.IsAvailable));
         }
 
         /// <summary>
@@ -208,9 +278,37 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         /// <returns>Una tarea que representa la operación asíncrona.</returns>
         public async Task UpdateStockAsync(int productId, int stock)
         {
-            Product? product = await _context.Products.FindAsync(productId) ?? throw new KeyNotFoundException("Producto no encontrado");
+            Product? product =
+                await _context.Products.FindAsync(productId)
+                ?? throw new KeyNotFoundException("Producto no encontrado");
             product.Stock = stock;
             await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Marca un producto como eliminado (soft delete).
+        /// </summary>
+        /// <param name="id">El ID del producto a eliminar.</param>
+        public async Task SoftDeleteAsync(int id)
+        {
+            await _context
+                .Products.Where(p => p.Id == id)
+                .ExecuteUpdateAsync(p =>
+                    p.SetProperty(p => p.IsAvailable, false) // Lo marca como no disponible
+                        .SetProperty(p => p.DeletedAt, true) // Pone la fecha de borrado
+                );
+        }
+
+        /// <summary>
+        /// Actualiza el descuento de un producto.
+        /// </summary>
+        /// <param name="id">ID del producto.</param>
+        /// <param name="discount">Nuevo descuento (0-100).</param>
+        public async Task UpdateDiscountAsync(int id, int discount)
+        {
+            await _context
+                .Products.Where(p => p.Id == id)
+                .ExecuteUpdateAsync(s => s.SetProperty(p => p.Discount, discount));
         }
     }
 }
