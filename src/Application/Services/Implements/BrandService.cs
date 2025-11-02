@@ -166,5 +166,24 @@ namespace TiendaUCN.src.Application.Services.Implements
             Log.Information("Marca actualizada con id", id);
             return brandUpdate;
         }
+
+        /// <summary>
+        /// Elimina una marca del sistema.
+        /// </summary>
+        public async Task DeleteBrandAsync(int id)
+        {
+            var brand1 = await _brandRepository.GetByIdAdminAsync(id);
+            if (brand1 == null)
+            {
+                throw new KeyNotFoundException($"No se encontró la marca con ID {id} para eliminar.");
+            }
+            var productCount = await _brandRepository.GetProductCountByIdAsync(id);
+            if (productCount > 0)
+            {
+                throw new InvalidOperationException($"No se puede eliminar la marca '{brand1.Name}' (ID: {id}) porque tiene {productCount} productos asociados. Primero debe desvincular los productos.");
+            }
+            await _brandRepository.DeleteAsync(id);
+            Log.Information("Marca eliminada", id);
+        }
     }
 }

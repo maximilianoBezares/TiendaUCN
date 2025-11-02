@@ -17,5 +17,6 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
         Task<int> CreateAsync(Brand brand);
         Task<bool> ExistsSlug(string slug);
         Task UpdateAsync(Brand brand);
+        Task DeleteAsync(int id);
     }
 }

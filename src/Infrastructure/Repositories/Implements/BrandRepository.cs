@@ -102,5 +102,18 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
             _context.Brands.Update(brand);
             await _context.SaveChangesAsync();
         }
+
+        /// <summary>
+        /// Elimina una marca del sistema
+        /// </summary>
+        public async Task DeleteAsync(int id)
+        {
+            var brand = await _context.Brands.FindAsync(id);
+            if (brand != null)
+            {
+                _context.Brands.Remove(brand);
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

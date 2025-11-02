@@ -60,7 +60,7 @@ namespace TiendaUCN.src.api.Controllers
             string location = $"/api/admin/brands/{result}";
             return Created(location, new GenericResponse<string>("Marca creada exitosamente", result));
         }
-        
+
         /// <summary>
         /// Actualiza una marca ya creada en el sistema mediante el id.
         /// </summary>
@@ -70,6 +70,28 @@ namespace TiendaUCN.src.api.Controllers
         {
             var result = await _brandService.UpdateBrandAsync(id, brandUpdate);
             return Ok(new GenericResponse<BrandUpdateDTO>("Marca actualizada exitosamente", result));
+        }
+        
+        /// <summary>
+        /// Elimina una marca del sistema mediante el id.
+        /// </summary>
+        [HttpDelete("admin/brands/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteBrandAsync(int id)
+        {
+            try
+            {
+                await _brandService.DeleteBrandAsync(id);
+                return Ok(new GenericResponse<object>("Marca eliminada exitosamente", id));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new GenericResponse<object>($"No se encontró la marca con ID {id}.", null));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new GenericResponse<object>(ex.Message, null));
+            }
         }
     }
 }

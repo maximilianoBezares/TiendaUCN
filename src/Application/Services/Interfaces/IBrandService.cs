@@ -29,5 +29,10 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// Actualiza una marca en el sistema
         /// </summary>
         Task<BrandUpdateDTO> UpdateBrandAsync(int id, BrandUpdateDTO brandUpdate);
+
+        /// <summary>
+        /// Elimina una marca del sistema.
+        /// </summary>
+        Task DeleteBrandAsync(int id);
     }
 }
