@@ -100,6 +100,8 @@ namespace TiendaUCN.src.Application.Services.Implements
                 throw new InvalidOperationException($"El nombre de categoría genera un slug: {slug} que ya esta en uso, porfavor cambiar nombre");
             }
             category.Slug = slug;
+            category.Name = Sanitize(category.Name);
+            category.Description = Sanitize(category.Description);
             int categoryId = await _categoriesRepository.CreateAsync(category);
             Log.Information("Categoría creada: {@Category}", category);
             return categoryId.ToString();
@@ -143,10 +145,25 @@ namespace TiendaUCN.src.Application.Services.Implements
                 throw new InvalidOperationException($"El nombre de categoría genera un slug: {slug} que ya esta en uso, porfavor cambiar nombre");
             }
             categoryUpdate.Adapt(category1);
+            category1.Name = Sanitize(categoryUpdate.name);
+            category1.Description = Sanitize(categoryUpdate.description);
             category1.Slug = slug;
             await _categoriesRepository.UpdateAsync(category1);
             Log.Information("Categoría actualizada con id", id);
             return categoryUpdate;
+        }
+
+        /// <summary>
+        /// Metodo privado para sanitizar los atributos o inputs que se pongan al crear o actualizar una categoria
+        /// </summary>
+        private string Sanitize(string attribute)
+        {
+            if (string.IsNullOrWhiteSpace(attribute))
+            {
+                return attribute ?? string.Empty;
+            }
+            string sanitized = System.Text.RegularExpressions.Regex.Replace(attribute, "<.*?>", string.Empty);
+            return sanitized.Trim();
         }
     }
 }
