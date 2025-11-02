@@ -190,6 +190,6 @@ El archivo `appsettings.json` debe ser actualizado con las credenciales necesari
 | **Rol** | `PATCH`| `/api/admin/users/{id}/role` | Asignación/Cambio de rol; evita dejar el sistema sin Admin. |
 
 ## Autor
-**@maximilianoBezares**
+**@maximilianoBezares** (Maximiliano Bezares)
+**@Gaboooou** (Gabriel Briones)
 
-* **@maximilianoBezares*** **@Ignacio Valenzuela**
