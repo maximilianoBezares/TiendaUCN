@@ -59,5 +59,13 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         {
             return await _context.Products.CountAsync(p => p.BrandId == id);
         }
+
+        /// <summary>
+        /// Obtiene las marcas mediante el id
+        /// </summary>
+        public async Task<Brand?> GetByIdAdminAsync(int id)
+        {
+            return await _context.Brands.AsNoTracking().Where(b => b.Id == id).FirstOrDefaultAsync();
+        }
     }
 }

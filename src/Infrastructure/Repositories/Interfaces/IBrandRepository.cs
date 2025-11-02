@@ -12,5 +12,6 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
     {
         Task<(IEnumerable<Brand> brands, int totalCount)> GetAllBrandsAsync(SearchParamsDTO searchParams);
         Task<int> GetProductCountByIdAsync(int id);
+        Task<Brand?> GetByIdAdminAsync(int id);
     }
 }

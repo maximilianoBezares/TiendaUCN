@@ -13,5 +13,10 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// Obtiene todas las marcas con paginación y búsqueda para admin.
         /// </summary>
         Task<ListedBrandsDTO> GetBrandsForAdminAsync(SearchParamsDTO searchParams);
+
+        /// <summary>
+        /// Obtiene una categoría específica por su ID para admin.
+        /// </summary>
+        Task<BrandDetailDTO> GetBrandByIdForAdminAsync(int id);
     }
 }

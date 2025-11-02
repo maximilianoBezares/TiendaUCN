@@ -66,5 +66,18 @@ namespace TiendaUCN.src.Application.Services.Implements
                 pageSize = brands1.Count()
             };
         }
+
+
+        /// <summary>
+        /// Obtiene una categoría específica por su ID para admin.
+        /// </summary>
+        public async Task<BrandDetailDTO> GetBrandByIdForAdminAsync(int id)
+        {
+            var brand = await _brandRepository.GetByIdAdminAsync(id) ?? throw new KeyNotFoundException($"Marca con id {id} no encontrado.");
+            Log.Information("Categoria encontrada: {@Category}", brand);
+            var dto = brand.Adapt<BrandDetailDTO>();
+            dto.productCount = await _brandRepository.GetProductCountByIdAsync(brand.Id);
+            return dto;
+        }
     }
 }

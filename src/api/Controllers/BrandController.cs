@@ -37,5 +37,16 @@ namespace TiendaUCN.src.api.Controllers
             return Ok(new GenericResponse<ListedBrandsDTO>("Marcas obtenidas exitosamente", result));
         }
         
+        /// <summary>
+        /// Obtiene una marca específica por su ID para administradores.
+        /// </summary>
+        [HttpGet("admin/brands/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetBrandByIdForAdminAsync(int id)
+        {
+            var result = await _brandService.GetBrandByIdForAdminAsync(id);
+            if (result == null) { throw new KeyNotFoundException($"No se encontró la categoría con ID {id}."); }
+            return Ok(new GenericResponse<BrandDetailDTO>("Categoría obtenida exitosamente", result));
+        }
     }
 }

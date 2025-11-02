@@ -37,6 +37,13 @@ namespace TiendaUCN.src.Application.Mappers
                 .Map(dest => dest.name, src => src.Name)
                 .Map(dest => dest.description, src => src.Description)
                 .Map(dest => dest.slug, src => src.Slug);
+
+            TypeAdapterConfig<Brand, BrandDetailDTO>.NewConfig()
+                .Map(dest => dest.id, src => src.Id)
+                .Map(dest => dest.name, src => src.Name)
+                .Map(dest => dest.description, src => src.Description)
+                .Map(dest => dest.createdAt, src => src.CreatedAt)
+                .Map(dest => dest.slug, src => src.Slug);
         }
     }
 }
