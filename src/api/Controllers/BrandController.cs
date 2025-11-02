@@ -48,7 +48,7 @@ namespace TiendaUCN.src.api.Controllers
             if (result == null) { throw new KeyNotFoundException($"No se encontró la marca con ID {id}."); }
             return Ok(new GenericResponse<BrandDetailDTO>("Marca obtenida exitosamente", result));
         }
-        
+
         /// <summary>
         /// Crea una nueva marca en el sistema.
         /// </summary>
@@ -59,6 +59,17 @@ namespace TiendaUCN.src.api.Controllers
             var result = await _brandService.CreateBrandAsync(brandCreate);
             string location = $"/api/admin/brands/{result}";
             return Created(location, new GenericResponse<string>("Marca creada exitosamente", result));
+        }
+        
+        /// <summary>
+        /// Actualiza una marca ya creada en el sistema mediante el id.
+        /// </summary>
+        [HttpPut("admin/brands/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateBrandAsync(int id, [FromBody] BrandUpdateDTO brandUpdate)
+        {
+            var result = await _brandService.UpdateBrandAsync(id, brandUpdate);
+            return Ok(new GenericResponse<BrandUpdateDTO>("Marca actualizada exitosamente", result));
         }
     }
 }

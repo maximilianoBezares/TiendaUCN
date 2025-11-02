@@ -24,5 +24,10 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// Crea una nueva Marca en el sistema
         /// </summary>
         Task<string> CreateBrandAsync(BrandCreateDTO brandCreate);
+
+        /// <summary>
+        /// Actualiza una marca en el sistema
+        /// </summary>
+        Task<BrandUpdateDTO> UpdateBrandAsync(int id, BrandUpdateDTO brandUpdate);
     }
 }

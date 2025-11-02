@@ -48,6 +48,10 @@ namespace TiendaUCN.src.Application.Mappers
             TypeAdapterConfig<BrandCreateDTO, Brand>.NewConfig()
                 .Map(dest => dest.Name, src => src.name)
                 .Map(dest => dest.Description, src => src.description);
+
+            TypeAdapterConfig<BrandUpdateDTO, Brand>.NewConfig()
+                .Map(dest => dest.Name, src => src.name)
+                .Map(dest => dest.Description, src => src.description);
         }
     }
 }

@@ -137,5 +137,34 @@ namespace TiendaUCN.src.Application.Services.Implements
             string sanitized = System.Text.RegularExpressions.Regex.Replace(attribute, "<.*?>", string.Empty);
             return sanitized.Trim();
         }
+
+        /// <summary>
+        /// Actualiza una marca en el sistema
+        /// </summary>
+        public async Task<BrandUpdateDTO> UpdateBrandAsync(int id, BrandUpdateDTO brandUpdate)
+        {
+            var brand1 = await _brandRepository.GetByIdAdminAsync(id);
+            if (brand1 == null)
+            {
+                throw new KeyNotFoundException($"No se encontró la marca con ID {id}.");
+            }
+            var brandName = await _brandRepository.GetByNameAsync(brandUpdate.name);
+            if (brandName != null && brandName.Id != id)
+            {
+                throw new InvalidOperationException($"Ya existe otra marca con el nombre '{brandUpdate.name}'.");
+            }
+            var slug = GenerateSlug(brandUpdate.name);
+            if (await _brandRepository.ExistsSlug(slug))
+            {
+                throw new InvalidOperationException($"El nombre de marca genera un slug: {slug} que ya esta en uso, porfavor cambiar nombre");
+            }
+            brandUpdate.Adapt(brand1);
+            brand1.Name = Sanitize(brandUpdate.name);
+            brand1.Description = Sanitize(brandUpdate.description);
+            brand1.Slug = slug;
+            await _brandRepository.UpdateAsync(brand1);
+            Log.Information("Marca actualizada con id", id);
+            return brandUpdate;
+        }
     }
 }

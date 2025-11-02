@@ -93,5 +93,14 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         {
             return await _context.Brands.AsNoTracking().Where(b => b.Slug.ToLower() == slug.ToLower()).AnyAsync();
         }
+
+        /// <summary>
+        /// Actualiza una marca en el sistema.
+        /// </summary>
+        public async Task UpdateAsync(Brand brand)
+        {
+            _context.Brands.Update(brand);
+            await _context.SaveChangesAsync();
+        }
     }
 }
