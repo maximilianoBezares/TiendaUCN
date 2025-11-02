@@ -60,11 +60,11 @@ namespace TiendaUCN.src.Infrastructure.Data
                 {
                     var categories = new List<Category>
                     {
-                        new Category { Name = "Electronics" },
-                        new Category { Name = "Clothing" },
-                        new Category { Name = "Home Appliances" },
-                        new Category { Name = "Books" },
-                        new Category { Name = "Sports" },
+                        new Category { Name = "Electronics", Slug = GenerateSlugStatic("Electronics") },
+                        new Category { Name = "Clothing", Slug = GenerateSlugStatic("Clothing") },
+                        new Category { Name = "Home Appliances", Slug = GenerateSlugStatic("Home Appliances") },
+                        new Category { Name = "Books", Slug = GenerateSlugStatic("Books") },
+                        new Category { Name = "Sports", Slug = GenerateSlugStatic("Sports") },
                     };
                     await context.Categories.AddRangeAsync(categories);
                     await context.SaveChangesAsync();
@@ -76,9 +76,30 @@ namespace TiendaUCN.src.Infrastructure.Data
                 {
                     var brands = new List<Brand>
                     {
-                        new Brand { Name = "Sony" },
-                        new Brand { Name = "Apple" },
-                        new Brand { Name = "HP" },
+                        new Brand
+                        {
+                            Name = "Sony",
+                            Description = "Líder mundial en electrónica de consumo, audio y videojuegos.",
+                            Slug = GenerateSlugStatic("Sony")
+                        },
+                        new Brand
+                        {
+                            Name = "Apple",
+                            Description = "Tecnología de vanguardia con un ecosistema de diseño y rendimiento premium.",
+                            Slug = GenerateSlugStatic("Apple")
+                        },
+                        new Brand
+                        {
+                            Name = "HP",
+                            Description = "Soluciones de computación y hardware para el hogar y entornos profesionales.",
+                            Slug = GenerateSlugStatic("HP")
+                        },
+                        new Brand
+                        {
+                            Name = "Nike",
+                            Description = "Equipamiento y ropa deportiva de alto rendimiento globalmente reconocida.",
+                            Slug = GenerateSlugStatic("Nike")
+                        },
                     };
                     await context.Brands.AddRangeAsync(brands);
                     await context.SaveChangesAsync();
@@ -290,6 +311,26 @@ namespace TiendaUCN.src.Infrastructure.Data
             string firstPartNumber = faker.Random.Int(1000, 9999).ToString();
             string secondPartNumber = faker.Random.Int(1000, 9999).ToString();
             return $"+569 {firstPartNumber}{secondPartNumber}";
+        }
+
+        /// <summary>
+        /// Método estático para generar un slug a partir del nombre (copia del servicio).
+        /// </summary>
+        private static string GenerateSlugStatic(string name)
+        {
+            string slug = name.ToLowerInvariant();
+            slug = slug
+                        .Replace("á", "a")
+                        .Replace("é", "e")
+                        .Replace("í", "i")
+                        .Replace("ó", "o")
+                        .Replace("ú", "u")
+                        .Replace("ñ", "n");
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9\s-]", "");
+            slug = slug.Replace(" ", "-");
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"-+", "-");
+            slug = slug.Trim('-');
+            return slug;
         }
     }
 }

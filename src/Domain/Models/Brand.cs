@@ -16,5 +16,15 @@ namespace TiendaUCN.src.Domain.Models
         /// Fecha de creación de la marca.
         /// </summary>
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Descripcion de la marca.
+        /// </summary>
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// Slug de la marca.
+        /// </summary>
+        public string Slug { get; set; }
     }
 }

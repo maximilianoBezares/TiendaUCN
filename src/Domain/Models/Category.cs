@@ -16,5 +16,15 @@ namespace TiendaUCN.src.Domain.Models
         /// Fecha de creación de la categoría.
         /// </summary>
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Descripcion de la categoria.
+        /// </summary>
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// Slug de la categoria.
+        /// </summary>
+        public string Slug { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 using Mapster;
+using TiendaUCN.src.Domain.Models;
 
 namespace TiendaUCN.src.Application.Mappers
 {
@@ -18,6 +19,12 @@ namespace TiendaUCN.src.Application.Mappers
             var productMapper = serviceProvider.GetService<ProductMapper>();
             productMapper?.ConfigureAllMappings();
 
+            var categoryMapper = serviceProvider.GetService<CategoryMapper>();
+            categoryMapper?.ConfigureAllMappings();
+
+            var brandMapper = serviceProvider.GetService<BrandMapper>();
+            brandMapper?.ConfigureAllMappings();
+            
             var cartMapper = serviceProvider.GetService<CartMapper>();
             cartMapper?.ConfigureAllMappings();
 
