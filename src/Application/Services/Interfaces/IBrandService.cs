@@ -1,0 +1,17 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using TiendaUCN.src.Application.DTO.BrandDTO;
+using TiendaUCN.src.Application.DTO.ProductDTO;
+
+namespace TiendaUCN.src.Application.Services.Interfaces
+{
+    public interface IBrandService
+    {
+        /// <summary>
+        /// Obtiene todas las marcas con paginación y búsqueda para admin.
+        /// </summary>
+        Task<ListedBrandsDTO> GetBrandsForAdminAsync(SearchParamsDTO searchParams);
+    }
+}

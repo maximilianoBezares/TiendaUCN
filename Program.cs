@@ -28,6 +28,7 @@ builder.Services.AddScoped<ProductMapper>();
 builder.Services.AddScoped<CartMapper>();
 builder.Services.AddScoped<OrderMapper>();
 builder.Services.AddScoped<CategoryMapper>();
+builder.Services.AddScoped<BrandMapper>();
 
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
@@ -50,6 +51,8 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICategoriesRepository, CategoriesRepository>();
 builder.Services.AddScoped<ICategoriesService, CategoriesService>();
+builder.Services.AddScoped<IBrandRepository, BrandRepository>();
+builder.Services.AddScoped<IBrandService, BrandService>();
 
 #region Email Service Configuration
 Log.Information("Configurando servicio de Email");
@@ -223,6 +226,7 @@ using (var scope = app.Services.CreateScope())
     scope.ServiceProvider.GetRequiredService<CartMapper>();
     scope.ServiceProvider.GetRequiredService<OrderMapper>();
     scope.ServiceProvider.GetRequiredService<CategoryMapper>();
+    scope.ServiceProvider.GetRequiredService<BrandMapper>();
     Log.Information("Mapeos registrados exitosamente.");
 }
 #endregion

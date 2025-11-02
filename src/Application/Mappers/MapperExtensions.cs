@@ -1,6 +1,5 @@
 using Mapster;
-
-
+using TiendaUCN.src.Domain.Models;
 
 namespace TiendaUCN.src.Application.Mappers
 {
@@ -22,6 +21,9 @@ namespace TiendaUCN.src.Application.Mappers
 
             var categoryMapper = serviceProvider.GetService<CategoryMapper>();
             categoryMapper?.ConfigureAllMappings();
+
+            var brandMapper = serviceProvider.GetService<BrandMapper>();
+            brandMapper?.ConfigureAllMappings();
 
             // Configuración global de Mapster para ignorar valores nulos
             TypeAdapterConfig.GlobalSettings.Default.IgnoreNullValues(true);

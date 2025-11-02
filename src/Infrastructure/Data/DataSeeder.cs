@@ -76,9 +76,30 @@ namespace TiendaUCN.src.Infrastructure.Data
                 {
                     var brands = new List<Brand>
                     {
-                        new Brand { Name = "Sony" },
-                        new Brand { Name = "Apple" },
-                        new Brand { Name = "HP" },
+                        new Brand
+                        {
+                            Name = "Sony",
+                            Description = "Líder mundial en electrónica de consumo, audio y videojuegos.",
+                            Slug = GenerateSlugStatic("Sony")
+                        },
+                        new Brand
+                        {
+                            Name = "Apple",
+                            Description = "Tecnología de vanguardia con un ecosistema de diseño y rendimiento premium.",
+                            Slug = GenerateSlugStatic("Apple")
+                        },
+                        new Brand
+                        {
+                            Name = "HP",
+                            Description = "Soluciones de computación y hardware para el hogar y entornos profesionales.",
+                            Slug = GenerateSlugStatic("HP")
+                        },
+                        new Brand
+                        {
+                            Name = "Nike",
+                            Description = "Equipamiento y ropa deportiva de alto rendimiento globalmente reconocida.",
+                            Slug = GenerateSlugStatic("Nike")
+                        },
                     };
                     await context.Brands.AddRangeAsync(brands);
                     await context.SaveChangesAsync();
