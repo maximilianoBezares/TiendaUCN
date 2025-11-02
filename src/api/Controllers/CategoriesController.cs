@@ -62,7 +62,18 @@ namespace TiendaUCN.src.api.Controllers
         {
             var result = await _categoriesService.CreateCategoryAsync(categoryCreate);
             string location = $"/api/admin/categories/{result}";
-                return Created(location, new GenericResponse<string>("Categoría creada exitosamente", result));
+            return Created(location, new GenericResponse<string>("Categoría creada exitosamente", result));
+        }
+
+        /// <summary>
+        /// Actualiza una categoria ya creada en el sistema mediante el id.
+        /// </summary>
+        [HttpPut("admin/categories/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateCategoryAsync(int id, [FromBody] CategoryUpdateDTO categoryUpdate)
+        {
+            var result = await _categoriesService.UpdateCategoryAsync(id, categoryUpdate);
+            return Ok(new GenericResponse<CategoryUpdateDTO>("Categoria actualizada exitosamente", result));
         }
     }
 }

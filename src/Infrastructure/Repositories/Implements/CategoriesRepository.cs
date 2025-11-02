@@ -60,7 +60,7 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         }
 
         /// <summary>
-        /// Obtienne las categorias mediante el id 
+        /// Obtiene las categorias mediante el id 
         /// </summary>
         public async Task<Category?> GetByIdAdminAsync(int id)
         {
@@ -91,6 +91,15 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
             await _context.Categories.AddAsync(category);
             await _context.SaveChangesAsync();
             return category.Id;
+        }
+
+        /// <summary>
+        /// Actualiza una categoria en el sistema.
+        /// </summary>
+        public async Task UpdateAsync(Category category)
+        {
+            _context.Categories.Update(category);
+            await _context.SaveChangesAsync();
         }
 
         /// <summary>

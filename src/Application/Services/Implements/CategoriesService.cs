@@ -124,5 +124,29 @@ namespace TiendaUCN.src.Application.Services.Implements
             slug = slug.Trim('-');
             return slug;
         }
+
+        public async Task<CategoryUpdateDTO> UpdateCategoryAsync(int id, CategoryUpdateDTO categoryUpdate)
+        {
+            var category1 = await _categoriesRepository.GetByIdAdminAsync(id);
+            if (category1 == null)
+            {
+                throw new KeyNotFoundException($"No se encontró la categoría con ID {id}.");
+            }
+            var categoryName = await _categoriesRepository.GetByNameAsync(categoryUpdate.name);
+            if (categoryName != null && categoryName.Id != id)
+            {
+                throw new InvalidOperationException($"Ya existe otra categoría con el nombre '{categoryUpdate.name}'.");
+            }
+            var slug = GenerateSlug(categoryUpdate.name);
+            if (await _categoriesRepository.ExistsSlug(slug))
+            {
+                throw new InvalidOperationException($"El nombre de categoría genera un slug: {slug} que ya esta en uso, porfavor cambiar nombre");
+            }
+            categoryUpdate.Adapt(category1);
+            category1.Slug = slug;
+            await _categoriesRepository.UpdateAsync(category1);
+            Log.Information("Categoría actualizada con id", id);
+            return categoryUpdate;
+        }
     }
 }

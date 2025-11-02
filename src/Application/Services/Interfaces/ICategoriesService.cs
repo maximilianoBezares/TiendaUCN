@@ -28,5 +28,10 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// </summary>
         /// <param name="categoryCreate"> datos de la categoria a crear</param>
         Task<string> CreateCategoryAsync(CategoryCreateDTO categoryCreate);
+
+        /// <summary>
+        /// Actualiza una categoria en el sistema
+        /// </summary>
+        Task<CategoryUpdateDTO> UpdateCategoryAsync(int id, CategoryUpdateDTO categoryUpdate);
     }
 }

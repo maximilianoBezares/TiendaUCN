@@ -16,5 +16,6 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
         Task<Category?> GetByNameAsync(string name);
         Task<int> CreateAsync(Category category);
         Task<bool> ExistsSlug(string slug);
+        Task UpdateAsync(Category category);
     }
 }

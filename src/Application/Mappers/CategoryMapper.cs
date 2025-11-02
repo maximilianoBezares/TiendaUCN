@@ -48,6 +48,10 @@ namespace TiendaUCN.src.Application.Mappers
             TypeAdapterConfig<CategoryCreateDTO, Category>.NewConfig()
                 .Map(dest => dest.Name, src => src.name)
                 .Map(dest => dest.Description, src => src.description);
+
+            TypeAdapterConfig<CategoryUpdateDTO, Category>.NewConfig()
+                .Map(dest => dest.Name, src => src.name)
+                .Map(dest => dest.Description, src => src.description);
         }
     }
 }
