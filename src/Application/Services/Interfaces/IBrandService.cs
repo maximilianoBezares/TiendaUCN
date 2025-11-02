@@ -18,5 +18,11 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// Obtiene una categoría específica por su ID para admin.
         /// </summary>
         Task<BrandDetailDTO> GetBrandByIdForAdminAsync(int id);
+
+
+        /// <summary>
+        /// Crea una nueva Marca en el sistema
+        /// </summary>
+        Task<string> CreateBrandAsync(BrandCreateDTO brandCreate);
     }
 }

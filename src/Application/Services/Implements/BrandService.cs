@@ -8,6 +8,7 @@ using TiendaUCN.src.Application.DTO.ProductDTO;
 using TiendaUCN.src.Infrastructure.Repositories.Interfaces;
 using Serilog;
 using Mapster;
+using TiendaUCN.src.Domain.Models;
 
 using TiendaUCN.src.Infrastructure.Repositories.Implements;
 
@@ -78,6 +79,63 @@ namespace TiendaUCN.src.Application.Services.Implements
             var dto = brand.Adapt<BrandDetailDTO>();
             dto.productCount = await _brandRepository.GetProductCountByIdAsync(brand.Id);
             return dto;
+        }
+
+        /// <summary>
+        /// Crea una nueva marca en el sistema
+        /// </summary>
+        public async Task<string> CreateBrandAsync(BrandCreateDTO brandCreate)
+        {
+            Brand brand = brandCreate.Adapt<Brand>();
+            var brandName = await _brandRepository.GetByNameAsync(brand.Name);
+            if (brandName != null)
+            {
+                throw new InvalidOperationException($"Ya existe una marca con el nombre '{brand.Name}'.");
+            }
+            string slug = GenerateSlug(brand.Name);
+            if (await _brandRepository.ExistsSlug(slug))
+            {
+                throw new InvalidOperationException($"El nombre de marca genera un slug: {slug} que ya esta en uso, porfavor cambiar nombre");
+            }
+            brand.Slug = slug;
+            brand.Name = Sanitize(brand.Name);
+            brand.Description = Sanitize(brand.Description);
+            int brandId = await _brandRepository.CreateAsync(brand);
+            Log.Information("Marca creada: {@Brand}", brand);
+            return brandId.ToString();
+        }
+
+        /// <summary>
+        /// Genera un slug a partir del nombre
+        /// </summary>
+        private string GenerateSlug(string name)
+        {
+            string slug = name.ToLowerInvariant();
+            slug = slug
+                    .Replace("á", "a")
+                    .Replace("é", "e")
+                    .Replace("í", "i")
+                    .Replace("ó", "o")
+                    .Replace("ú", "u")
+                    .Replace("ñ", "n");
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9\s-]", "");
+            slug = slug.Replace(" ", "-");
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"-+", "-");
+            slug = slug.Trim('-');
+            return slug;
+        }
+
+        /// <summary>
+        /// Metodo privado para sanitizar los atributos o inputs que se pongan al crear o actualizar una marca
+        /// </summary>
+        private string Sanitize(string attribute)
+        {
+            if (string.IsNullOrWhiteSpace(attribute))
+            {
+                return attribute ?? string.Empty;
+            }
+            string sanitized = System.Text.RegularExpressions.Regex.Replace(attribute, "<.*?>", string.Empty);
+            return sanitized.Trim();
         }
     }
 }

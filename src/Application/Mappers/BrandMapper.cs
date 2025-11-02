@@ -28,7 +28,7 @@ namespace TiendaUCN.src.Application.Mappers
         }
 
         /// <summary>
-        /// Configura los mapeos para la entidad Category.
+        /// Configura los mapeos para la entidad Brand.
         /// </summary>
         public void ConfigureBrandMappings()
         {
@@ -44,6 +44,10 @@ namespace TiendaUCN.src.Application.Mappers
                 .Map(dest => dest.description, src => src.Description)
                 .Map(dest => dest.createdAt, src => src.CreatedAt)
                 .Map(dest => dest.slug, src => src.Slug);
+
+            TypeAdapterConfig<BrandCreateDTO, Brand>.NewConfig()
+                .Map(dest => dest.Name, src => src.name)
+                .Map(dest => dest.Description, src => src.description);
         }
     }
 }

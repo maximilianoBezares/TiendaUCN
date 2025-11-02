@@ -36,7 +36,7 @@ namespace TiendaUCN.src.api.Controllers
             if (result == null || result.brands.Count == 0) { throw new KeyNotFoundException("No se encontraron marcas."); }
             return Ok(new GenericResponse<ListedBrandsDTO>("Marcas obtenidas exitosamente", result));
         }
-        
+
         /// <summary>
         /// Obtiene una marca específica por su ID para administradores.
         /// </summary>
@@ -45,8 +45,20 @@ namespace TiendaUCN.src.api.Controllers
         public async Task<IActionResult> GetBrandByIdForAdminAsync(int id)
         {
             var result = await _brandService.GetBrandByIdForAdminAsync(id);
-            if (result == null) { throw new KeyNotFoundException($"No se encontró la categoría con ID {id}."); }
-            return Ok(new GenericResponse<BrandDetailDTO>("Categoría obtenida exitosamente", result));
+            if (result == null) { throw new KeyNotFoundException($"No se encontró la marca con ID {id}."); }
+            return Ok(new GenericResponse<BrandDetailDTO>("Marca obtenida exitosamente", result));
+        }
+        
+        /// <summary>
+        /// Crea una nueva marca en el sistema.
+        /// </summary>
+        [HttpPost("admin/brands")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateBrandAsync([FromBody] BrandCreateDTO brandCreate)
+        {
+            var result = await _brandService.CreateBrandAsync(brandCreate);
+            string location = $"/api/admin/brands/{result}";
+            return Created(location, new GenericResponse<string>("Marca creada exitosamente", result));
         }
     }
 }

@@ -67,5 +67,31 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         {
             return await _context.Brands.AsNoTracking().Where(b => b.Id == id).FirstOrDefaultAsync();
         }
+
+        /// <summary>
+        /// Obtiene las marcas mediante el nombre
+        /// </summary>
+        public async Task<Brand?> GetByNameAsync(string name)
+        {
+            return await _context.Brands.AsNoTracking().Where(b => b.Name == name).FirstOrDefaultAsync();
+        }
+
+        /// <summary>
+        /// Crea una marca en el sistema.
+        /// </summary>
+        public async Task<int> CreateAsync(Brand brand)
+        {
+            await _context.Brands.AddAsync(brand);
+            await _context.SaveChangesAsync();
+            return brand.Id;
+        }
+
+        /// <summary>
+        /// Compara si existe un mismo slug en la base de datos con el pasado en parametro, si devuelve true, entonces los dos slugs son iguales, si devuelve false, no son iguales
+        /// </summary>
+        public async Task<bool> ExistsSlug(string slug)
+        {
+            return await _context.Brands.AsNoTracking().Where(b => b.Slug.ToLower() == slug.ToLower()).AnyAsync();
+        }
     }
 }
