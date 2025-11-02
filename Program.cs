@@ -17,6 +17,7 @@ using TiendaUCN.src.Domain.Models;
 using TiendaUCN.src.Infrastructure.Data;
 using TiendaUCN.src.Infrastructure.Repositories.Implements;
 using TiendaUCN.src.Infrastructure.Repositories.Interfaces;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString =
