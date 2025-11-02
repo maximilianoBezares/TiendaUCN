@@ -165,5 +165,24 @@ namespace TiendaUCN.src.Application.Services.Implements
             string sanitized = System.Text.RegularExpressions.Regex.Replace(attribute, "<.*?>", string.Empty);
             return sanitized.Trim();
         }
+
+        /// <summary>
+        /// Elimina una categoria del sistema
+        /// </summary>
+        public async Task DeleteCategoryAsync(int id)
+        {
+            var category1 = await _categoriesRepository.GetByIdAdminAsync(id);
+            if (category1 == null)
+            {
+                throw new KeyNotFoundException($"No se encontró la categoría con ID {id} para eliminar.");
+            }
+            var productCount = await _categoriesRepository.GetProductCountByIdAsync(id);
+            if (productCount > 0)
+            {
+                throw new InvalidOperationException($"No se puede eliminar la categoría '{category1.Name}' (ID: {id}) porque tiene {productCount} productos asociados. Primero debe desvincular los productos.");
+            }
+            await _categoriesRepository.DeleteAsync(id);
+            Log.Information("Categoria eliminada", id);
+        }
     }
 }

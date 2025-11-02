@@ -75,5 +75,27 @@ namespace TiendaUCN.src.api.Controllers
             var result = await _categoriesService.UpdateCategoryAsync(id, categoryUpdate);
             return Ok(new GenericResponse<CategoryUpdateDTO>("Categoria actualizada exitosamente", result));
         }
+
+        /// <summary>
+        /// Elimina una categoria del sistema mediante el id.
+        /// </summary>
+        [HttpDelete("admin/categories/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteCategoryAsync(int id)
+        {
+            try
+            {
+                await _categoriesService.DeleteCategoryAsync(id);
+                return Ok(new GenericResponse<object>("Categoria eliminada exitosamente", id));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new GenericResponse<object>($"No se encontró la categoría con ID {id}.", null));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new GenericResponse<object>(ex.Message, null));
+            }
+        }
     }
 }

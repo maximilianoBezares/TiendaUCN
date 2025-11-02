@@ -109,5 +109,18 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         {
             return await _context.Categories.AsNoTracking().Where(c => c.Slug.ToLower() == slug.ToLower()).AnyAsync();
         }
+
+        /// <summary>
+        /// Elimina una categoria del sistema
+        /// </summary>
+        public async Task DeleteAsync(int id)
+        {
+            var category = await _context.Categories.FindAsync(id);
+            if (category != null)
+            {
+                _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

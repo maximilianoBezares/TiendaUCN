@@ -33,5 +33,10 @@ namespace TiendaUCN.src.Application.Services.Interfaces
         /// Actualiza una categoria en el sistema
         /// </summary>
         Task<CategoryUpdateDTO> UpdateCategoryAsync(int id, CategoryUpdateDTO categoryUpdate);
+
+        /// <summary>
+        /// Elimina una categoria del sistema.
+        /// </summary>
+        Task DeleteCategoryAsync(int id);
     }
 }
