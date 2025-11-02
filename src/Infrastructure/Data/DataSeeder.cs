@@ -60,9 +60,17 @@ namespace TiendaUCN.src.Infrastructure.Data
                 {
                     var categories = new List<Category>
                     {
-                        new Category { Name = "Electronics", Slug = GenerateSlugStatic("Electronics") },
+                        new Category
+                        {
+                            Name = "Electronics",
+                            Slug = GenerateSlugStatic("Electronics"),
+                        },
                         new Category { Name = "Clothing", Slug = GenerateSlugStatic("Clothing") },
-                        new Category { Name = "Home Appliances", Slug = GenerateSlugStatic("Home Appliances") },
+                        new Category
+                        {
+                            Name = "Home Appliances",
+                            Slug = GenerateSlugStatic("Home Appliances"),
+                        },
                         new Category { Name = "Books", Slug = GenerateSlugStatic("Books") },
                         new Category { Name = "Sports", Slug = GenerateSlugStatic("Sports") },
                     };
@@ -79,26 +87,30 @@ namespace TiendaUCN.src.Infrastructure.Data
                         new Brand
                         {
                             Name = "Sony",
-                            Description = "Líder mundial en electrónica de consumo, audio y videojuegos.",
-                            Slug = GenerateSlugStatic("Sony")
+                            Description =
+                                "Líder mundial en electrónica de consumo, audio y videojuegos.",
+                            Slug = GenerateSlugStatic("Sony"),
                         },
                         new Brand
                         {
                             Name = "Apple",
-                            Description = "Tecnología de vanguardia con un ecosistema de diseño y rendimiento premium.",
-                            Slug = GenerateSlugStatic("Apple")
+                            Description =
+                                "Tecnología de vanguardia con un ecosistema de diseño y rendimiento premium.",
+                            Slug = GenerateSlugStatic("Apple"),
                         },
                         new Brand
                         {
                             Name = "HP",
-                            Description = "Soluciones de computación y hardware para el hogar y entornos profesionales.",
-                            Slug = GenerateSlugStatic("HP")
+                            Description =
+                                "Soluciones de computación y hardware para el hogar y entornos profesionales.",
+                            Slug = GenerateSlugStatic("HP"),
                         },
                         new Brand
                         {
                             Name = "Nike",
-                            Description = "Equipamiento y ropa deportiva de alto rendimiento globalmente reconocida.",
-                            Slug = GenerateSlugStatic("Nike")
+                            Description =
+                                "Equipamiento y ropa deportiva de alto rendimiento globalmente reconocida.",
+                            Slug = GenerateSlugStatic("Nike"),
                         },
                     };
                     await context.Brands.AddRangeAsync(brands);
@@ -119,6 +131,50 @@ namespace TiendaUCN.src.Infrastructure.Data
                         ?? throw new InvalidOperationException(
                             "El rol de administrador no está configurado."
                         );
+
+                    User TestCustomer = new User
+                    {
+                        FirstName = "Maximiliano",
+                        LastName = "Bezares",
+                        Email = "maximiliano.bezares@alumnos.ucn.cl",
+                        EmailConfirmed = true,
+                        Gender = Gender.Masculino,
+                        Rut = "21725466-3",
+                        BirthDate = DateTime.Parse("2004-10-29T19:16:50.085Z"),
+                        PhoneNumber = "949098712",
+                    };
+                    TestCustomer.UserName = TestCustomer.Email;
+                    var CustomerPassword = "NuevaContra123!";
+                    var CustomerResult = await userManager.CreateAsync(
+                        TestCustomer,
+                        CustomerPassword
+                    );
+                    if (CustomerResult.Succeeded)
+                    {
+                        var roleResult = await userManager.AddToRoleAsync(
+                            TestCustomer,
+                            customerRole.Name!
+                        );
+                        if (!roleResult.Succeeded)
+                        {
+                            Log.Error(
+                                "Error asignando rol de customer: {Errors}",
+                                string.Join(", ", roleResult.Errors.Select(e => e.Description))
+                            );
+                            throw new InvalidOperationException(
+                                "No se pudo asignar el rol al usuario."
+                            );
+                        }
+                        Log.Information("Usuario creado con éxito.");
+                    }
+                    else
+                    {
+                        Log.Error(
+                            "Error creando usuario: {Errors}",
+                            string.Join(", ", CustomerResult.Errors.Select(e => e.Description))
+                        );
+                        throw new InvalidOperationException("No se pudo crear el usuario.");
+                    }
 
                     // Creación de usuario administrador
                     User adminUser = new User
@@ -319,13 +375,12 @@ namespace TiendaUCN.src.Infrastructure.Data
         private static string GenerateSlugStatic(string name)
         {
             string slug = name.ToLowerInvariant();
-            slug = slug
-                        .Replace("á", "a")
-                        .Replace("é", "e")
-                        .Replace("í", "i")
-                        .Replace("ó", "o")
-                        .Replace("ú", "u")
-                        .Replace("ñ", "n");
+            slug = slug.Replace("á", "a")
+                .Replace("é", "e")
+                .Replace("í", "i")
+                .Replace("ó", "o")
+                .Replace("ú", "u")
+                .Replace("ñ", "n");
             slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9\s-]", "");
             slug = slug.Replace(" ", "-");
             slug = System.Text.RegularExpressions.Regex.Replace(slug, @"-+", "-");
