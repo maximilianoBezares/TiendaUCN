@@ -1,0 +1,35 @@
+namespace TiendaUCN.src.Application.Services.Interfaces
+{
+    /// <summary>
+    /// Interfaz para el servicio de envío de correos electrónicos.
+    /// </summary>
+    public interface IEmailService
+    {
+        /// <summary>
+        /// Envía un código de verificación al correo electrónico del usuario.
+        /// </summary>
+        /// <param name="email">El correo electrónico del usuario.</param>
+        /// <param name="code">El código de verificación a enviar.</param>
+        Task SendVerificationCodeEmailAsync(string email, string code);
+
+        /// <summary>
+        /// Envía un correo electrónico de bienvenida al usuario.
+        /// </summary>
+        /// <param name="email">El correo electrónico del usuario.</param>
+        Task SendWelcomeEmailAsync(string email);
+
+        /// <summary>
+        /// Envía un código de recuperación de contraseña al correo electrónico del usuario.
+        /// </summary>
+        /// <param name="email">El correo electrónico del usuario.</param>
+        /// <param name="code">El código de recuperación a enviar.</param>
+        Task SendPasswordRecoverEmailAsync(string email, string code);
+
+        /// <summary>
+        /// Envía un código de verificación para la actualización de perfil al correo electrónico del usuario.
+        /// </summary>
+        /// <param name="email">El correo electrónico del usuario.</param>
+        /// <param name="code">El código de verificación a enviar.</param>
+        Task SendProfileUpdateVerificationCodeEmailAsync(string email, string code);
+    }
+}

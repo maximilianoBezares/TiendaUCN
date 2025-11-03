@@ -1,0 +1,93 @@
+using Microsoft.AspNetCore.Mvc;
+using Serilog;
+using TiendaUCN.src.Application.DTO;
+using TiendaUCN.src.Application.Services.Interfaces;
+using TiendaUCN.src.Application.DTO.AuthDTO;
+
+
+namespace TiendaUCN.src.api.Controllers
+{
+    /// <summary>
+    /// Controlador de autenticación.
+    /// </summary>
+    public class AuthController(IUserService userService) : BaseController
+    {
+        /// <summary>
+        /// Servicio de usuarios.
+        /// </summary>
+        private readonly IUserService _userService = userService;
+
+        /// <summary>
+        /// Inicia sesión con el usuario proporcionado.
+        /// </summary>
+        /// <param name="loginDTO">DTO que contiene las credenciales del usuario.</param>
+        /// <returns>Un IActionResult que representa el resultado de la operación.</returns>
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+        {
+            var (token, userId) = await _userService.LoginAsync(loginDTO, HttpContext);
+            return Ok(new GenericResponse<string>("Inicio de sesión exitoso", token));
+        }
+
+        /// <summary>
+        /// Registra un nuevo usuario.
+        /// </summary>
+        /// <param name="registerDTO">DTO que contiene la información del nuevo usuario.</param
+        /// <returns>Un IActionResult que representa el resultado de la operación.</returns>
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
+        {
+            var message = await _userService.RegisterAsync(registerDTO, HttpContext);
+            return Ok(new GenericResponse<string>("Registro exitoso", message));
+        }
+
+        /// <summary>
+        /// Verifica el correo electrónico del usuario.
+        /// </summary>
+        /// <param name="verifyEmailDTO">DTO que contiene el correo electrónico y el código de verificación.</param>
+        /// <returns>Un IActionResult que representa el resultado de la operación.</returns>
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailDTO verifyEmailDTO)
+        {
+            var message = await _userService.VerifyEmailAsync(verifyEmailDTO);
+            return Ok(new GenericResponse<string>("Verificación de correo electrónico exitosa", message));
+        }
+
+        /// <summary>
+        /// Reenvía el código de verificación al correo electrónico del usuario.
+        /// </summary>
+        /// <param name="resendEmailVerificationCodeDTO">DTO que contiene el correo electrónico del usuario.</param>
+        /// <returns>Un IActionResult que representa el resultado de la operación.</returns>
+        [HttpPost("resend-email-verification-code")]
+        public async Task<IActionResult> ResendEmailVerificationCode([FromBody] ResendEmailVerificationDTO resendEmailVerificationCodeDTO)
+        {
+            var message = await _userService.ResendEmailVerificationCodeAsync(resendEmailVerificationCodeDTO);
+            return Ok(new GenericResponse<string>("Código de verificación reenviado exitosamente", message));
+        }
+
+        /// <summary>
+        /// Envía un código de recuperación de contraseña al correo electrónico del usuario.
+        /// </summary>
+        /// <param name="passwordRecoverDTO">DTO que contiene el correo electrónico del usuario.</param>
+        /// <returns>Un IActionResult que representa el resultado de la operación.</returns>
+        [HttpPost("recover-password")]
+        public async Task<IActionResult> PasswordRecover([FromBody] PasswordRecoverDTO passwordRecoverDTO)
+        {
+            var message = await _userService.PasswordRecoverAsync(passwordRecoverDTO, HttpContext);
+            return Ok(new GenericResponse<string>("Código de recuperación de contraseña enviado exitosamente", message));
+        }
+
+        /// <summary>
+        /// Restablece la contraseña del usuario.
+        /// </summary>
+        /// <param name="resetPasswordDTO">DTO que contiene el correo electrónico, el código
+        /// y la nueva contraseña del usuario.</param>
+        /// <returns>Un IActionResult que representa el resultado de la operación.</returns>
+        [HttpPatch("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO resetPasswordDTO)
+        {
+            var message = await _userService.ResetPasswordAsync(resetPasswordDTO);
+            return Ok(new GenericResponse<string>("Contraseña restablecida exitosamente", message));
+        }
+    }    
+}

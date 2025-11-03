@@ -1,0 +1,101 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using TiendaUCN.src.Application.Services.Interfaces;
+using TiendaUCN.src.Application.DTO.ProductDTO;
+using TiendaUCN.src.Application.DTO.CategoriesDTO;
+using TiendaUCN.src.Application.DTO;
+
+namespace TiendaUCN.src.api.Controllers
+{
+    /// <summary>
+    /// Controller para gestionar las categorías de productos.
+    /// </summary>
+    public class CategoriesController : BaseController
+    {
+        /// <summary>
+        /// Servicio de categorías.
+        /// </summary>
+        private readonly ICategoriesService _categoriesService;
+
+        /// <summary>
+        /// Constructor del controlador de categorías.
+        /// </summary>
+        public CategoriesController(ICategoriesService categoriesService)
+        {
+            _categoriesService = categoriesService;
+        }
+
+        /// <summary>
+        /// Obtiene todas las categorías de productos para administradores con paginación y búsqueda.
+        /// </summary>
+        [HttpGet("admin/categories")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetCategoriesForAdminAsync([FromQuery] SearchParamsDTO searchParams)
+        {
+            var result = await _categoriesService.GetCategoriesForAdminAsync(searchParams);
+            if (result == null || result.categories.Count == 0) { throw new KeyNotFoundException("No se encontraron categorías."); }
+            return Ok(new GenericResponse<ListedCategoriesDTO>("Categorías obtenidas exitosamente", result));
+        }
+
+        /// <summary>
+        /// Obtiene una categoría específica por su ID para administradores.
+        /// </summary>
+        [HttpGet("admin/categories/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetCategoryByIdForAdminAsync(int id)
+        {
+            var result = await _categoriesService.GetCategoryByIdForAdminAsync(id);
+            if (result == null) { throw new KeyNotFoundException($"No se encontró la categoría con ID {id}."); }
+            return Ok(new GenericResponse<CategoryDetailDTO>("Categoría obtenida exitosamente", result));
+        }
+
+        /// <summary>
+        /// Crea una nueva categoria en el sistema.
+        /// </summary>
+        [HttpPost("admin/categories")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateCategoryAsync([FromBody] CategoryCreateDTO categoryCreate)
+        {
+            var result = await _categoriesService.CreateCategoryAsync(categoryCreate);
+            string location = $"/api/admin/categories/{result}";
+            return Created(location, new GenericResponse<string>("Categoría creada exitosamente", result));
+        }
+
+        /// <summary>
+        /// Actualiza una categoria ya creada en el sistema mediante el id.
+        /// </summary>
+        [HttpPut("admin/categories/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateCategoryAsync(int id, [FromBody] CategoryUpdateDTO categoryUpdate)
+        {
+            var result = await _categoriesService.UpdateCategoryAsync(id, categoryUpdate);
+            return Ok(new GenericResponse<CategoryUpdateDTO>("Categoria actualizada exitosamente", result));
+        }
+
+        /// <summary>
+        /// Elimina una categoria del sistema mediante el id.
+        /// </summary>
+        [HttpDelete("admin/categories/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteCategoryAsync(int id)
+        {
+            try
+            {
+                await _categoriesService.DeleteCategoryAsync(id);
+                return Ok(new GenericResponse<object>("Categoria eliminada exitosamente", id));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new GenericResponse<object>($"No se encontró la categoría con ID {id}.", null));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new GenericResponse<object>(ex.Message, null));
+            }
+        }
+    }
+}
