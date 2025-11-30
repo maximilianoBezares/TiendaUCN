@@ -178,6 +178,22 @@ builder.Services.AddHangfireServer();
 
 #endregion
 
+#region CORS Configuration
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
+#endregion
+
+
 var app = builder.Build();
 
 app.UseHangfireDashboard(
