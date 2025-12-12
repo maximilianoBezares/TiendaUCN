@@ -4,7 +4,7 @@ namespace TiendaUCN.src.Application.DTO.ProductDTO.AdminDTO
 {
     public class ListedProductsForAdminDTO
     {
-        public List<ProductForAdminDTO> Products { get; set; } = new List<ProductForAdminDTO>();
+        public List<ProductDetailAdminDTO> Products { get; set; } = new List<ProductDetailAdminDTO>();
 
         public int TotalCount { get; set; }
 
