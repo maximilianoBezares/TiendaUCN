@@ -66,7 +66,10 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         /// </summary>
         /// <param name="categoryName">El nombre de la categoría.</param>
         /// <returns>Una tarea que representa la operación asíncrona, con la categoría creada o encontrada.</returns>
-        public async Task<Category> CreateOrGetCategoryAsync(string categoryName)
+        public async Task<Category> CreateOrGetCategoryAsync(
+            string categoryName,
+            string categorySlug
+        )
         {
             var category = await _context
                 .Categories.AsNoTracking()
@@ -76,7 +79,7 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
             {
                 return category;
             }
-            category = new Category { Name = categoryName };
+            category = new Category { Name = categoryName, Slug = categorySlug };
             await _context.Categories.AddAsync(category);
             await _context.SaveChangesAsync();
             return category;

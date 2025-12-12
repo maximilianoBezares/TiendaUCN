@@ -42,8 +42,11 @@ namespace TiendaUCN.src.Application.Services.Implements
         public async Task<string> CreateAsync(CreateProductDTO createProductDTO)
         {
             Product product = createProductDTO.Adapt<Product>();
+
+            string categorySlug = GenerateSlug(createProductDTO.CategoryName);
+
             Category category =
-                await _productRepository.CreateOrGetCategoryAsync(createProductDTO.CategoryName)
+                await _productRepository.CreateOrGetCategoryAsync(createProductDTO.CategoryName,categorySlug)
                 ?? throw new Exception("Error al crear o obtener la categoría del producto.");
             Brand brand =
                 await _productRepository.CreateOrGetBrandAsync(createProductDTO.BrandName)
@@ -70,6 +73,26 @@ namespace TiendaUCN.src.Application.Services.Implements
                 await _fileService.UploadAsync(image, productId);
             }
             return product.Id.ToString();
+        }
+
+        /// <summary>
+        /// Genera un slug a partir del nombre
+        /// </summary>
+        private string GenerateSlug(string name) // <--- FUNCIÓN COPIADA/AÑADIDA
+        {
+            string slug = name.ToLowerInvariant();
+            slug = slug
+                    .Replace("á", "a")
+                    .Replace("é", "e")
+                    .Replace("í", "i")
+                    .Replace("ó", "o")
+                    .Replace("ú", "u")
+                    .Replace("ñ", "n");
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9\s-]", "");
+            slug = slug.Replace(" ", "-");
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"-+", "-");
+            slug = slug.Trim('-');
+            return slug;
         }
 
         /// <summary>
@@ -132,15 +155,15 @@ namespace TiendaUCN.src.Application.Services.Implements
                 pageSize
             );
 
-            // Convertimos los productos filtrados a DTOs para la respuesta
             return new ListedProductsForAdminDTO
             {
-                Products = products.Adapt<List<ProductForAdminDTO>>(),
+                Products = products.Adapt<List<ProductDetailAdminDTO>>(),
                 TotalCount = totalCount,
                 TotalPages = totalPages,
                 CurrentPage = currentPage,
                 PageSize = products.Count(),
             };
+            // Convertimos los productos filtrados a DTOs para la respuesta
         }
 
         /// <summary>

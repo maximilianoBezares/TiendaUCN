@@ -41,7 +41,7 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
         /// </summary>
         /// <param name="categoryName">El nombre de la categoría.</param>
         /// <returns>Una tarea que representa la operación asíncrona, con la categoría creada o encontrada.</returns>
-        Task<Category> CreateOrGetCategoryAsync(string categoryName);
+        Task<Category> CreateOrGetCategoryAsync(string categoryName, string categorySlug);
 
         /// <summary>
         /// Crea o obtiene una marca por su nombre.

@@ -132,6 +132,8 @@ namespace TiendaUCN.src.Application.Mappers
                     src => (src.Price - (src.Price * (src.Discount / 100.0m))).ToString("C")
                 );
 
+            
+
             TypeAdapterConfig<CreateProductDTO, Product>
                 .NewConfig()
                 .Map(dest => dest.Title, src => src.Title)
