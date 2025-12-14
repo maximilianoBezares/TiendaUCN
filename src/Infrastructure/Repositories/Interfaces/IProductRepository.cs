@@ -48,7 +48,7 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Interfaces
         /// </summary>
         /// <param name="brandName">El nombre de la marca.</param>
         /// <returns>Una tarea que representa la operación asíncrona, con la marca creada o encontrada.</returns>
-        Task<Brand> CreateOrGetBrandAsync(string brandName);
+        Task<Brand> CreateOrGetBrandAsync(string brandName, string brandSlug);
 
         /// <summary>
         /// Cambia el estado activo de un producto por su ID.

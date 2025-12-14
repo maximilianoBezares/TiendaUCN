@@ -44,13 +44,18 @@ namespace TiendaUCN.src.Application.Services.Implements
             Product product = createProductDTO.Adapt<Product>();
 
             string categorySlug = GenerateSlug(createProductDTO.CategoryName);
+            string brandSlug = GenerateSlug(createProductDTO.BrandName);
 
             Category category =
-                await _productRepository.CreateOrGetCategoryAsync(createProductDTO.CategoryName,categorySlug)
-                ?? throw new Exception("Error al crear o obtener la categoría del producto.");
+                await _productRepository.CreateOrGetCategoryAsync(
+                    createProductDTO.CategoryName,
+                    categorySlug
+                ) ?? throw new Exception("Error al crear o obtener la categoría del producto.");
             Brand brand =
-                await _productRepository.CreateOrGetBrandAsync(createProductDTO.BrandName)
-                ?? throw new Exception("Error al crear o obtener la marca del producto.");
+                await _productRepository.CreateOrGetBrandAsync(
+                    createProductDTO.BrandName,
+                    brandSlug
+                ) ?? throw new Exception("Error al crear o obtener la marca del producto.");
             product.CategoryId = category.Id;
             product.BrandId = brand.Id;
             product.Images = new List<Image>();
@@ -81,13 +86,12 @@ namespace TiendaUCN.src.Application.Services.Implements
         private string GenerateSlug(string name) // <--- FUNCIÓN COPIADA/AÑADIDA
         {
             string slug = name.ToLowerInvariant();
-            slug = slug
-                    .Replace("á", "a")
-                    .Replace("é", "e")
-                    .Replace("í", "i")
-                    .Replace("ó", "o")
-                    .Replace("ú", "u")
-                    .Replace("ñ", "n");
+            slug = slug.Replace("á", "a")
+                .Replace("é", "e")
+                .Replace("í", "i")
+                .Replace("ó", "o")
+                .Replace("ú", "u")
+                .Replace("ñ", "n");
             slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9\s-]", "");
             slug = slug.Replace(" ", "-");
             slug = System.Text.RegularExpressions.Regex.Replace(slug, @"-+", "-");
