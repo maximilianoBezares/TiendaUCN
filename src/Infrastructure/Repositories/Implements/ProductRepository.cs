@@ -45,7 +45,7 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
         /// </summary>
         /// <param name="brandName">El nombre de la marca.</param>
         /// <returns>Una tarea que representa la operación asíncrona, con la marca creada o encontrada.</returns>
-        public async Task<Brand> CreateOrGetBrandAsync(string brandName)
+        public async Task<Brand> CreateOrGetBrandAsync(string brandName, string brandSlug)
         {
             var brand = await _context
                 .Brands.AsNoTracking()
@@ -55,7 +55,10 @@ namespace TiendaUCN.src.Infrastructure.Repositories.Implements
             {
                 return brand;
             }
-            brand = new Brand { Name = brandName };
+
+            // **Aseguramos que el Slug se inicialice antes de guardar**
+            brand = new Brand { Name = brandName, Slug = brandSlug };
+
             await _context.Brands.AddAsync(brand);
             await _context.SaveChangesAsync();
             return brand;
